@@ -61,9 +61,18 @@ def login():
 
 @app.route("/panel")
 def panel():
-    if "usuario" not in session:
+    if "user" not in session:
         return redirect("/")
-    return render_template("panel.html", usuario=session["usuario"])
+
+    datos = []
+    for pid, nombre in PERSONAS.items():
+        saldo = calcular_saldo(pid)
+        datos.append({
+            "nombre": nombre,
+            "saldo": saldo
+        })
+
+    return render_template("panel.html", datos=datos)
 
 @app.route("/logout")
 def logout():
@@ -72,5 +81,6 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
