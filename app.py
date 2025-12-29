@@ -9,6 +9,41 @@ USUARIOS = {
     "Tesorero": "cuotas2025",
     "Secretaria": "scout"
 }
+PERSONAS = {
+    1: "Juan Perez",
+    2: "Maria Gomez",
+    3: "Carlos Lopez"
+}
+CUOTAS = {
+    "2026-01": 4000,
+    "2026-07": 5000
+}
+
+PAGOS = [
+    {"persona": 1, "mes": "2026-01", "monto": 4000},
+    {"persona": 1, "mes": "2026-02", "monto": 4000},
+    {"persona": 2, "mes": "2026-01", "monto": 4000},
+]
+
+
+# ======================
+# FUNCIONES
+# ======================
+
+def calcular_saldo(persona_id):
+    total_pagado = sum(
+        p["monto"] for p in PAGOS if p["persona"] == persona_id
+    )
+
+    meses = ["2026-01", "2026-02", "2026-03"]
+    total_debido = sum(CUOTAS[m] for m in meses)
+
+    return total_debido - total_pagado
+
+
+# ======================
+# RUTAS
+# ======================
 
 @app.route("/", methods=["GET", "POST"])
 def login():
@@ -37,4 +72,5 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
