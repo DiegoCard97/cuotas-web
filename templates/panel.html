@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Panel</title>
+    <title>Panel de cuotas</title>
 </head>
 <body>
-    <h1>Bienvenido {{ usuario }}</h1>
 
-    <p>Sistema de cuotas</p>
+<h2>Estado de cuotas</h2>
 
-    <a href="/logout">Cerrar sesión</a>
+<table border="1">
+    <tr>
+        <th>Persona</th>
+        <th>Saldo</th>
+    </tr>
+
+    {% for d in datos %}
+    <tr>
+        <td>{{ d.nombre }}</td>
+        <td>{{ d.saldo }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
 </body>
 </html>
