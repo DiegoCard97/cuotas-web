@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, redirect, session
 
 app = Flask(__name__)
-app.secret_key = "clave_secreta_simple"
+app.secret_key = "algo-secreto"
 
 # Usuarios de prueba
 USUARIOS = {
     "admin": "1234",
-    "juan": "abcd",
-    "ana": "9999"
+    "Tesorero": "cuotas2025",
+    "Secretaria": "scout"
 }
 
 @app.route("/", methods=["GET", "POST"])
@@ -37,3 +37,4 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
