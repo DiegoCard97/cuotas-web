@@ -48,14 +48,17 @@ def calcular_saldo(persona_id):
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        usuario = request.form["usuario"]
-        password = request.form["password"]
+        print("LLEGO POST")
+        print(request.form)
 
-        if usuario in USUARIOS and USUARIOS[usuario] == password:
-            session["usuario"] = usuario
+        user = request.form.get("usuario")
+        password = request.form.get("password")
+
+        if user in USUARIOS and USUARIOS[user] == password:
+            session["user"] = user
             return redirect("/panel")
         else:
-            return render_template("login.html", error="Usuario o contraseña incorrectos")
+            return render_template("login.html", error="Usuario o clave incorrectos")
 
     return render_template("login.html")
 
@@ -81,6 +84,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
