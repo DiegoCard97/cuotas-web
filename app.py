@@ -35,11 +35,11 @@ def calcular_saldo(persona_id):
         p["monto"] for p in PAGOS if p["persona"] == persona_id
     )
 
-    meses = ["2026-01", "2026-02", "2026-03"]
-    total_debido = sum(CUOTAS[m] for m in meses)
+    total_debido = 0
+    for mes, valor in CUOTAS.items():
+        total_debido += valor
 
     return total_debido - total_pagado
-
 
 # ======================
 # RUTAS
@@ -84,6 +84,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
