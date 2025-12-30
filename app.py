@@ -77,6 +77,26 @@ def panel():
 
     return render_template("panel.html", datos=datos)
 
+@app.route("/pago", methods=["GET", "POST"])
+def pago():
+    if "user" not in session:
+        return redirect("/")
+
+    if request.method == "POST":
+        persona_id = int(request.form["persona"])
+        mes = request.form["mes"]
+        monto = int(request.form["monto"])
+
+        PAGOS.append({
+            "persona": persona_id,
+            "mes": mes,
+            "monto": monto
+        })
+
+        return redirect("/panel")
+
+    return render_template("pago.html", personas=PERSONAS)
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -84,6 +104,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
