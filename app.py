@@ -75,7 +75,7 @@ def panel():
             "saldo": saldo
         })
 
-    return render_template("panel.html", datos=datos)
+    return render_template("panel.html", datos=datos, pagos=PAGOS, personas=PERSONAS)
 
 @app.route("/pago", methods=["GET", "POST"])
 def pago():
@@ -104,6 +104,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
