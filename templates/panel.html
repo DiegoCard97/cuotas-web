@@ -35,6 +35,7 @@
         <th>Persona</th>
         <th>Mes</th>
         <th>Monto</th>
+        <th>Recibo</th>
     </tr>
 
     {% for p in pagos %}
@@ -42,6 +43,11 @@
         <td>{{ personas[p.persona] }}</td>
         <td>{{ p.mes }}</td>
         <td>{{ p.monto }}</td>
+        <td>
+            <a href="/recibo/{{ p.id }}" target="_blank">
+                📄 Recibo
+            </a>
+        </td>
     </tr>
     {% endfor %}
 </table>
