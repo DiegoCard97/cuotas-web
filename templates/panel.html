@@ -25,5 +25,23 @@
     {% endfor %}
 </table>
 
+<h3>Pagos registrados</h3>
+
+<table border="1">
+    <tr>
+        <th>Persona</th>
+        <th>Mes</th>
+        <th>Monto</th>
+    </tr>
+
+    {% for p in pagos %}
+    <tr>
+        <td>{{ personas[p.persona] }}</td>
+        <td>{{ p.mes }}</td>
+        <td>{{ p.monto }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
 </body>
 </html>
