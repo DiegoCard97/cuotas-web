@@ -1,4 +1,9 @@
 from flask import Flask, render_template, request, redirect, session
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from datetime import datetime
+from flask import send_file
+import io
 
 app = Flask(__name__)
 app.secret_key = "algo-secreto"
@@ -40,6 +45,30 @@ def calcular_saldo(persona_id):
         total_debido += valor
 
     return total_debido - total_pagado
+
+def generar_recibo(nombre, mes, monto):
+    buffer = io.BytesIO()
+
+    c = canvas.Canvas(buffer, pagesize=A4)
+    ancho, alto = A4
+
+    c.setFont("Helvetica", 12)
+
+    c.drawString(50, alto - 50, "RECIBO DE PAGO")
+    c.line(50, alto - 55, 400, alto - 55)
+
+    c.drawString(50, alto - 100, f"Nombre: {nombre}")
+    c.drawString(50, alto - 130, f"Mes abonado: {mes}")
+    c.drawString(50, alto - 160, f"Monto: ${monto}")
+    c.drawString(50, alto - 190, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}")
+
+    c.drawString(50, alto - 250, "Firma: ___________________________")
+
+    c.showPage()
+    c.save()
+
+    buffer.seek(0)
+    return buffer
 
 # ======================
 # RUTAS
@@ -97,6 +126,36 @@ def pago():
 
     return render_template("pago.html", personas=PERSONAS)
 
+@app.route("/recibo/<int:pago_id>")
+def recibo(pago_id):
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT personas.nombre, pagos.mes, pagos.monto
+        FROM pagos
+        JOIN personas ON pagos.persona_id = personas.id
+        WHERE pagos.id = ?
+    """, (pago_id,))
+
+    fila = cur.fetchone()
+    conn.close()
+
+    if not fila:
+        return "Pago no encontrado"
+
+    nombre, mes, monto = fila
+    pdf = generar_recibo(nombre, mes, monto)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name=f"recibo_{nombre}_{mes}.pdf",
+        mimetype="application/pdf"
+    )
+
+
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -104,6 +163,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
