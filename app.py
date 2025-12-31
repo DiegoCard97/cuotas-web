@@ -128,23 +128,15 @@ def pago():
 
 @app.route("/recibo/<int:pago_id>")
 def recibo(pago_id):
-    conn = sqlite3.connect("cuotas.db")
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT personas.nombre, pagos.mes, pagos.monto
-        FROM pagos
-        JOIN personas ON pagos.persona_id = personas.id
-        WHERE pagos.id = ?
-    """, (pago_id,))
-
-    fila = cur.fetchone()
-    conn.close()
-
-    if not fila:
+    if pago_id < 0 or pago_id >= len(PAGOS):
         return "Pago no encontrado"
 
-    nombre, mes, monto = fila
+    pago = PAGOS[pago_id]
+
+    nombre = PERSONAS[pago["persona"]]
+    mes = pago["mes"]
+    monto = pago["monto"]
+
     pdf = generar_recibo(nombre, mes, monto)
 
     return send_file(
@@ -163,6 +155,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
