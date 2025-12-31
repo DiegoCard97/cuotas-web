@@ -36,17 +36,17 @@
     </tr>
 
     {% for p in pagos %}
-    <tr>
-        <td>{{ personas[p.persona] }}</td>
-        <td>{{ p.mes }}</td>
-        <td>{{ p.monto }}</td>
-        <td>
-            <a href="/recibo/{{ p.id }}" target="_blank">
-                📄 Recibo
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
+<tr>
+    <td>{{ personas[p.persona] }}</td>
+    <td>{{ p.mes }}</td>
+    <td>{{ p.monto }}</td>
+    <td>
+        <a href="/recibo/{{ loop.index0 }}" target="_blank">
+            📄 Recibo
+        </a>
+    </td>
+</tr>
+{% endfor %}
 </table>
 
 </body>
