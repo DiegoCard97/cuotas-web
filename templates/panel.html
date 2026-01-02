@@ -25,16 +25,18 @@
     <tr>
         <td>{{ p.nombre }}</td>
         {% for mes in meses %}
-            <td>
-                {% if p.meses[mes] %}
-                    ✔
-                {% else %}
-                    ❌
-                {% endif %}
-            </td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
+    <td>
+        {% if p.meses[mes] %}
+            ✔
+        {% else %}
+            ❌
+            <br>
+            <a href="/pagar/{{ p.id }}/{{ mes }}">
+                Pagar
+            </a>
+        {% endif %}
+    </td>
+{% endfor %}
 </table>
 
 <h3>Pagos registrados</h3>
