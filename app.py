@@ -10,10 +10,23 @@ def init_db():
     conn = sqlite3.connect("cuotas.db")
     cur = conn.cursor()
 
+    # Personas
     cur.execute("""
         CREATE TABLE IF NOT EXISTS personas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL
+        )
+    """)
+
+    # Pagos
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS pagos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            persona_id INTEGER,
+            mes TEXT,
+            monto INTEGER,
+            fecha TEXT,
+            FOREIGN KEY (persona_id) REFERENCES personas(id)
         )
     """)
 
@@ -47,7 +60,11 @@ PAGOS = [
     {"persona": 2, "mes": "2026-01", "monto": 4000},
 ]
 
-
+MESES = [
+    "2026-01", "2026-02", "2026-03", "2026-04",
+    "2026-05", "2026-06", "2026-07", "2026-08",
+    "2026-09", "2026-10", "2026-11", "2026-12"
+]
 # ======================
 # FUNCIONES
 # ======================
@@ -114,15 +131,38 @@ def panel():
     if "user" not in session:
         return redirect("/")
 
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT id, nombre FROM personas")
+    personas = cur.fetchall()
+
     datos = []
-    for pid, nombre in PERSONAS.items():
-        saldo = calcular_saldo(pid)
+
+    for pid, nombre in personas:
+        cur.execute(
+            "SELECT mes FROM pagos WHERE persona_id = ?",
+            (pid,)
+        )
+        pagos = [row[0] for row in cur.fetchall()]
+
+        estado_meses = {}
+        for mes in MESES:
+            estado_meses[mes] = mes in pagos
+
         datos.append({
+            "id": pid,
             "nombre": nombre,
-            "saldo": saldo
+            "meses": estado_meses
         })
 
-    return render_template("panel.html", datos=datos, pagos=PAGOS, personas=PERSONAS)
+    conn.close()
+
+    return render_template(
+        "panel.html",
+        datos=datos,
+        meses=MESES
+    )
 
 @app.route("/pago", methods=["GET", "POST"])
 def pago():
@@ -189,6 +229,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
