@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, redirect, session
+import sqlite3
+import io
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from datetime import datetime
 from flask import send_file
-import io
-import sqlite3
+
 
 app = Flask(__name__)
 app.secret_key = "algo-secreto"
@@ -187,6 +188,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
