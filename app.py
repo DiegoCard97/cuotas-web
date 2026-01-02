@@ -6,6 +6,19 @@ from reportlab.pdfgen import canvas
 from datetime import datetime
 from flask import send_file
 
+def init_db():
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS personas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    conn.close()
 
 app = Flask(__name__)
 app.secret_key = "algo-secreto"
@@ -74,19 +87,7 @@ def generar_recibo(nombre, mes, monto):
     buffer.seek(0)
     return buffer
 
-def init_db():
-    conn = sqlite3.connect("cuotas.db")
-    cur = conn.cursor()
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS personas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL
-        )
-    """)
-
-    conn.commit()
-    conn.close()
 # ======================
 # RUTAS
 # ======================
@@ -188,6 +189,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
