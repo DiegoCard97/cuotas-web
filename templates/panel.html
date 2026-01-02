@@ -16,13 +16,23 @@
 <table border="1">
     <tr>
         <th>Persona</th>
-        <th>Saldo</th>
+        {% for mes in meses %}
+            <th>{{ mes }}</th>
+        {% endfor %}
     </tr>
 
-    {% for d in datos %}
+    {% for p in datos %}
     <tr>
-        <td>{{ d.nombre }}</td>
-        <td>{{ d.saldo }}</td>
+        <td>{{ p.nombre }}</td>
+        {% for mes in meses %}
+            <td>
+                {% if p.meses[mes] %}
+                    ✔
+                {% else %}
+                    ❌
+                {% endif %}
+            </td>
+        {% endfor %}
     </tr>
     {% endfor %}
 </table>
