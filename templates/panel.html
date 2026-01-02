@@ -10,7 +10,7 @@
 
 <a href="/persona">➕ Agregar persona</a>
 <br><br>
-    
+
 <h2>Estado de cuotas</h2>
 
 <table border="1">
@@ -24,19 +24,23 @@
     {% for p in datos %}
     <tr>
         <td>{{ p.nombre }}</td>
+
         {% for mes in meses %}
-    <td>
-        {% if p.meses[mes] %}
-            ✔
-        {% else %}
-            ❌
-            <br>
-            <a href="/pagar/{{ p.id }}/{{ mes }}">
-                Pagar
-            </a>
-        {% endif %}
-    </td>
-{% endfor %}
+            <td>
+                {% if p.meses[mes] %}
+                    ✔
+                {% else %}
+                    ❌
+                    <br>
+                    <a href="/pagar/{{ p.id }}/{{ mes }}">
+                        Pagar
+                    </a>
+                {% endif %}
+            </td>
+        {% endfor %}
+
+    </tr>
+    {% endfor %}
 </table>
 
 <h3>Pagos registrados</h3>
@@ -50,17 +54,17 @@
     </tr>
 
     {% for p in pagos %}
-<tr>
-    <td>{{ personas[p.persona] }}</td>
-    <td>{{ p.mes }}</td>
-    <td>{{ p.monto }}</td>
-    <td>
-        <a href="/recibo/{{ loop.index0 }}" target="_blank">
-            📄 Recibo
-        </a>
-    </td>
-</tr>
-{% endfor %}
+    <tr>
+        <td>{{ personas[p.persona] }}</td>
+        <td>{{ p.mes }}</td>
+        <td>{{ p.monto }}</td>
+        <td>
+            <a href="/recibo/{{ loop.index0 }}" target="_blank">
+                📄 Recibo
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
 </table>
 
 </body>
