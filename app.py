@@ -222,6 +222,17 @@ def persona():
 
     return render_template("persona.html")
 
+@app.route("/pagar/<int:persona_id>/<mes>")
+def pagar_mes(persona_id, mes):
+    if "user" not in session:
+        return redirect("/")
+
+    return render_template(
+        "pagar_mes.html",
+        persona_id=persona_id,
+        mes=mes
+    )
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -229,6 +240,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
