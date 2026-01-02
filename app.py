@@ -4,9 +4,12 @@ from reportlab.pdfgen import canvas
 from datetime import datetime
 from flask import send_file
 import io
+import sqlite3
 
 app = Flask(__name__)
 app.secret_key = "algo-secreto"
+
+init_db()
 
 # Usuarios de prueba
 USUARIOS = {
@@ -70,6 +73,19 @@ def generar_recibo(nombre, mes, monto):
     buffer.seek(0)
     return buffer
 
+def init_db():
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS personas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    conn.close()
 # ======================
 # RUTAS
 # ======================
@@ -146,7 +162,23 @@ def recibo(pago_id):
         mimetype="application/pdf"
     )
 
+@app.route("/persona", methods=["GET", "POST"])
+def persona():
+    if "user" not in session:
+        return redirect("/")
 
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+
+        conn = sqlite3.connect("cuotas.db")
+        cur = conn.cursor()
+        cur.execute("INSERT INTO personas (nombre) VALUES (?)", (nombre,))
+        conn.commit()
+        conn.close()
+
+        return redirect("/panel")
+
+    return render_template("persona.html")
 
 @app.route("/logout")
 def logout():
@@ -155,6 +187,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
