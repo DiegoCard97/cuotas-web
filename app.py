@@ -44,11 +44,8 @@ USUARIOS = {
     "Tesorero": "cuotas2025",
     "Secretaria": "scout"
 }
-PERSONAS = {
-    1: "Juan Perez",
-    2: "Maria Gomez",
-    3: "Carlos Lopez"
-}
+
+
 CUOTAS = {
     "2026-01": 4000,
     "2026-07": 5000
@@ -68,6 +65,17 @@ MESES = [
 # ======================
 # FUNCIONES
 # ======================
+
+def obtener_personas():
+    conn = sqlite3.connect("cuotas.db")
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+
+    cur.execute("SELECT id, nombre FROM personas")
+    personas = cur.fetchall()
+
+    conn.close()
+    return personas
 
 def calcular_saldo(persona_id):
     total_pagado = sum(
@@ -163,26 +171,27 @@ def panel():
         datos=datos,
         meses=MESES
     )
-
+    
 @app.route("/pago", methods=["GET", "POST"])
 def pago():
-    if "user" not in session:
-        return redirect("/")
+    personas = obtener_personas()
 
     if request.method == "POST":
         persona_id = int(request.form["persona"])
         mes = request.form["mes"]
-        monto = int(request.form["monto"])
+        monto = CUOTAS.get(mes)
 
-        PAGOS.append({
-            "persona": persona_id,
-            "mes": mes,
-            "monto": monto
-        })
+        if monto is None:
+            return "Ese mes no tiene cuota definida"
 
+        registrar_pago(persona_id, mes, monto)
         return redirect("/panel")
 
-    return render_template("pago.html", personas=PERSONAS)
+    return render_template(
+        "pago.html",
+        personas=personas,
+        meses=MESES
+    )
 
 @app.route("/recibo/<int:pago_id>")
 def recibo(pago_id):
@@ -255,6 +264,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
