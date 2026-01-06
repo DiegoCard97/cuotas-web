@@ -223,15 +223,30 @@ def persona():
     return render_template("persona.html")
 
 @app.route("/pagar/<int:persona_id>/<mes>")
-def pagar_mes(persona_id, mes):
+def pagar(persona_id, mes):
     if "user" not in session:
         return redirect("/")
 
-    return render_template(
-        "pagar_mes.html",
-        persona_id=persona_id,
-        mes=mes
-    )
+    # 1. Verificar que el mes tenga cuota
+    if mes not in CUOTAS:
+        return "Ese mes no tiene cuota definida"
+
+    monto = CUOTAS[mes]
+
+    # 2. Evitar pagar dos veces el mismo mes
+    for p in PAGOS:
+        if p["persona"] == persona_id and p["mes"] == mes:
+            return "Ese mes ya está pago"
+
+    # 3. Registrar el pago
+    PAGOS.append({
+        "persona": persona_id,
+        "mes": mes,
+        "monto": monto
+    })
+
+    # 4. Volver al panel
+    return redirect("/panel")
 
 @app.route("/logout")
 def logout():
@@ -240,6 +255,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
