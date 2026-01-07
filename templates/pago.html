@@ -7,27 +7,28 @@
 
 <h2>Registrar pago</h2>
 
-<form method="POST">
+<form method="post">
 
-    <label>Persona:</label><br>
+    <label>Persona:</label>
     <select name="persona" required>
-        {% for p in personas %}
-        <option value="{{ p.id }}">{{ p.nombre }}</option>
-    {% endfor %}
-</select>
-    </select><br><br>
+        {% for id, nombre in personas %}
+            <option value="{{ id }}">{{ nombre }}</option>
+        {% endfor %}
+    </select>
 
-    <label>Mes (YYYY-MM):</label><br>
-    <input type="text" name="mes" placeholder="2026-03" required><br><br>
+    <br><br>
 
-    <label>Monto:</label><br>
-    <input type="number" name="monto" required><br><br>
+    <label>Mes:</label>
+    <select name="mes" required>
+        {% for mes, monto in cuotas %}
+            <option value="{{ mes }}">
+                {{ mes }} - ${{ monto }}
+            </option>
+        {% endfor %}
+    </select>
 
-    <button type="submit">Guardar pago</button>
+    <br><br>
+
+    <button type="submit">💰 Registrar pago</button>
+
 </form>
-
-<br>
-<a href="/panel">Volver al panel</a>
-
-</body>
-</html>
