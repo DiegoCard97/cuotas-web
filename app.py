@@ -143,9 +143,37 @@ def cargar_cuotas_base():
 
     conn.commit()
     conn.close()
+def cargar_cuotas_iniciales():
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
 
+    cuotas = [
+        ("2026-01", 5000),
+        ("2026-02", 5000),
+        ("2026-03", 5000),
+        ("2026-04", 5000),
+        ("2026-05", 5000),
+        ("2026-06", 5000),
+        ("2026-07", 6000),
+        ("2026-08", 6000),
+        ("2026-09", 6000),
+        ("2026-10", 6000),
+        ("2026-11", 6000),
+        ("2026-12", 6000),
+    ]
+
+    for mes, monto in cuotas:
+        cur.execute(
+            "INSERT OR IGNORE INTO cuotas (mes, monto) VALUES (?, ?)",
+            (mes, monto)
+        )
+
+    conn.commit()
+    conn.close()
+    
 init_db()
-cargar_cuotas_base()
+cargar_cuotas_iniciales()
+
 # ======================
 # RUTAS
 # ======================
@@ -221,23 +249,55 @@ def panel():
     
 @app.route("/pago", methods=["GET", "POST"])
 def pago():
-    personas = obtener_personas()
+    if "user" not in session:
+        return redirect("/")
+
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
+
+    # personas
+    cur.execute("SELECT id, nombre FROM personas")
+    personas = cur.fetchall()
+
+    # cuotas
+    cur.execute("SELECT mes, monto FROM cuotas")
+    cuotas = cur.fetchall()
 
     if request.method == "POST":
         persona_id = int(request.form["persona"])
         mes = request.form["mes"]
-        monto = CUOTAS.get(mes)
 
-        if monto is None:
+        cur.execute(
+            "SELECT monto FROM cuotas WHERE mes = ?",
+            (mes,)
+        )
+        cuota = cur.fetchone()
+
+        if not cuota:
+            conn.close()
             return "Ese mes no tiene cuota definida"
 
-        registrar_pago(persona_id, mes, monto)
+        monto = cuota[0]
+
+        cur.execute("""
+            INSERT INTO pagos (persona_id, mes, monto, fecha)
+            VALUES (?, ?, ?, ?)
+        """, (
+            persona_id,
+            mes,
+            monto,
+            datetime.now().strftime("%Y-%m-%d")
+        ))
+
+        conn.commit()
+        conn.close()
         return redirect("/panel")
 
+    conn.close()
     return render_template(
         "pago.html",
         personas=personas,
-        meses=MESES
+        cuotas=cuotas
     )
 
 @app.route("/recibo/<int:pago_id>")
@@ -311,6 +371,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
