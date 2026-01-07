@@ -1,19 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Panel de cuotas</title>
+    <meta charset="UTF-8">
+    <title>Panel de Cuotas</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 6px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #eee;
+        }
+
+        .ok {
+            background-color: #c8f7c5;
+            font-weight: bold;
+        }
+
+        .no {
+            background-color: #f7c5c5;
+            font-weight: bold;
+        }
+
+        .acciones {
+            margin-bottom: 20px;
+        }
+
+        a.boton {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: #2c7be5;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        a.boton:hover {
+            background-color: #1a5dc9;
+        }
+    </style>
 </head>
+
 <body>
 
-<a href="/pago">➕ Registrar nuevo pago</a>
-<br><br>
+<h1>Panel de cuotas</h1>
 
-<a href="/persona">➕ Agregar persona</a>
-<br><br>
+<div class="acciones">
+    <a href="/persona" class="boton">➕ Agregar persona</a>
+    <a href="/pago" class="boton">💰 Registrar pago</a>
+    <a href="/logout" class="boton">🚪 Salir</a>
+</div>
 
-<h2>Estado de cuotas</h2>
-
-<table border="1">
+<table>
     <tr>
         <th>Persona</th>
         {% for mes in meses %}
@@ -23,46 +74,15 @@
 
     {% for p in datos %}
     <tr>
-        <td>{{ p.nombre }}</td>
+        <td><strong>{{ p.nombre }}</strong></td>
 
         {% for mes in meses %}
-            <td>
-                {% if p.meses[mes] %}
-                    ✔
-                {% else %}
-                    ❌
-                    <br>
-                    <a href="/pagar/{{ p.id }}/{{ mes }}">
-                        Pagar
-                    </a>
-                {% endif %}
-            </td>
+            {% if p.meses[mes] %}
+                <td class="ok">✔</td>
+            {% else %}
+                <td class="no">❌</td>
+            {% endif %}
         {% endfor %}
-
-    </tr>
-    {% endfor %}
-</table>
-
-<h3>Pagos registrados</h3>
-
-<table border="1">
-    <tr>
-        <th>Persona</th>
-        <th>Mes</th>
-        <th>Monto</th>
-        <th>Recibo</th>
-    </tr>
-
-    {% for p in pagos %}
-    <tr>
-        <td>{{ personas[p.persona] }}</td>
-        <td>{{ p.mes }}</td>
-        <td>{{ p.monto }}</td>
-        <td>
-            <a href="/recibo/{{ loop.index0 }}" target="_blank">
-                📄 Recibo
-            </a>
-        </td>
     </tr>
     {% endfor %}
 </table>
