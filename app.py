@@ -7,7 +7,7 @@ from datetime import datetime
 from flask import send_file
 
 def init_db():
-     conn = sqlite3.connect("cuotas.db")
+    conn = sqlite3.connect("cuotas.db")
     cur = conn.cursor()
 
     cur.execute("""
@@ -22,6 +22,17 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             mes TEXT UNIQUE NOT NULL,
             monto INTEGER NOT NULL
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS pagos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            persona_id INTEGER NOT NULL,
+            mes TEXT NOT NULL,
+            monto INTEGER NOT NULL,
+            fecha TEXT NOT NULL,
+            FOREIGN KEY (persona_id) REFERENCES personas(id)
         )
     """)
 
@@ -300,6 +311,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
