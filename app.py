@@ -152,11 +152,11 @@ def panel():
             "SELECT mes FROM pagos WHERE persona_id = ?",
             (pid,)
         )
-        pagos = [row[0] for row in cur.fetchall()]
+        pagos_persona = [row[0] for row in cur.fetchall()]
 
         estado_meses = {}
         for mes in MESES:
-            estado_meses[mes] = mes in pagos
+            estado_meses[mes] = mes in pagos_persona
 
         datos.append({
             "id": pid,
@@ -164,7 +164,21 @@ def panel():
             "meses": estado_meses
         })
 
+    cur.execute("""
+        SELECT persona_id, mes, monto
+        FROM pagos
+        ORDER BY persona_id, mes
+    """)
+    pagos = cur.fetchall()
+
     conn.close()
+
+    return render_template(
+        "panel.html",
+        datos=datos,
+        meses=MESES,
+        pagos=pagos
+    )
 
     return render_template(
         "panel.html",
@@ -264,6 +278,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
