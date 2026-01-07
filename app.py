@@ -7,10 +7,9 @@ from datetime import datetime
 from flask import send_file
 
 def init_db():
-    conn = sqlite3.connect("cuotas.db")
+     conn = sqlite3.connect("cuotas.db")
     cur = conn.cursor()
 
-    # Personas
     cur.execute("""
         CREATE TABLE IF NOT EXISTS personas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,15 +17,11 @@ def init_db():
         )
     """)
 
-    # Pagos
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS pagos (
+        CREATE TABLE IF NOT EXISTS cuotas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            persona_id INTEGER,
-            mes TEXT,
-            monto INTEGER,
-            fecha TEXT,
-            FOREIGN KEY (persona_id) REFERENCES personas(id)
+            mes TEXT UNIQUE NOT NULL,
+            monto INTEGER NOT NULL
         )
     """)
 
@@ -112,7 +107,34 @@ def generar_recibo(nombre, mes, monto):
     buffer.seek(0)
     return buffer
 
+def cargar_cuotas_base():
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
 
+    for mes in MESES:
+        cur.execute(
+            "INSERT OR IGNORE INTO cuotas (mes, monto) VALUES (?, ?)",
+            (mes, 4000)
+        )
+
+    conn.commit()
+    conn.close()
+
+def cargar_cuotas_base():
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
+
+    for mes in MESES:
+        cur.execute(
+            "INSERT OR IGNORE INTO cuotas (mes, monto) VALUES (?, ?)",
+            (mes, 4000)
+        )
+
+    conn.commit()
+    conn.close()
+
+init_db()
+cargar_cuotas_base()
 # ======================
 # RUTAS
 # ======================
@@ -278,6 +300,7 @@ def logout():
 
 if __name__ == "__main__":
     app.run()
+
 
 
 
