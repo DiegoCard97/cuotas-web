@@ -11,9 +11,10 @@
 
     <label>Persona:</label><br>
     <select name="persona" required>
-        {% for id, nombre in personas.items() %}
-        <option value="{{ id }}">{{ nombre }}</option>
-        {% endfor %}
+        {% for p in personas %}
+        <option value="{{ p.id }}">{{ p.nombre }}</option>
+    {% endfor %}
+</select>
     </select><br><br>
 
     <label>Mes (YYYY-MM):</label><br>
