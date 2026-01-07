@@ -1,16 +1,15 @@
-from flask import Flask, render_template, request, redirect, session, send_file
+from flask import Flask, render_template, request, redirect, session
 import sqlite3
-import io
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
 from datetime import datetime
 
 # ======================
-# CONFIG
+# CONFIGURACIÓN
 # ======================
 
 app = Flask(__name__)
 app.secret_key = "algo-secreto"
+
+DB_NAME = "cuotas.db"
 
 MESES = [
     "2026-01", "2026-02", "2026-03", "2026-04",
@@ -28,8 +27,11 @@ USUARIOS = {
 # BASE DE DATOS
 # ======================
 
+def get_db():
+    return sqlite3.connect(DB_NAME)
+
 def init_db():
-    conn = sqlite3.connect("cuotas.db")
+    conn = get_db()
     cur = conn.cursor()
 
     cur.execute("""
@@ -49,10 +51,11 @@ def init_db():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS pagos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            persona_id INTEGER,
-            mes TEXT,
-            monto INTEGER,
-            fecha TEXT,
+            persona_id INTEGER NOT NULL,
+            mes TEXT NOT NULL,
+            monto INTEGER NOT NULL,
+            fecha TEXT NOT NULL,
+            UNIQUE(persona_id, mes),
             FOREIGN KEY (persona_id) REFERENCES personas(id)
         )
     """)
@@ -61,13 +64,20 @@ def init_db():
     conn.close()
 
 def cargar_cuotas_iniciales():
-    conn = sqlite3.connect("cuotas.db")
+    conn = get_db()
     cur = conn.cursor()
 
-    for mes in MESES:
+    cuotas = [
+        ("2026-01", 5000), ("2026-02", 5000), ("2026-03", 5000),
+        ("2026-04", 5000), ("2026-05", 5000), ("2026-06", 5000),
+        ("2026-07", 6000), ("2026-08", 6000), ("2026-09", 6000),
+        ("2026-10", 6000), ("2026-11", 6000), ("2026-12", 6000),
+    ]
+
+    for mes, monto in cuotas:
         cur.execute(
             "INSERT OR IGNORE INTO cuotas (mes, monto) VALUES (?, ?)",
-            (mes, 5000 if mes < "2026-07" else 6000)
+            (mes, monto)
         )
 
     conn.commit()
@@ -77,130 +87,75 @@ init_db()
 cargar_cuotas_iniciales()
 
 # ======================
-# UTILIDADES
-# ======================
-
-def generar_recibo(nombre, mes, monto):
-    buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-
-    c.setFont("Helvetica", 12)
-    c.drawString(50, 800, "RECIBO DE PAGO")
-    c.drawString(50, 760, f"Nombre: {nombre}")
-    c.drawString(50, 730, f"Mes: {mes}")
-    c.drawString(50, 700, f"Monto: ${monto}")
-    c.drawString(50, 670, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}")
-
-    c.showPage()
-    c.save()
-    buffer.seek(0)
-    return buffer
-
-# ======================
-# RUTAS
+# LOGIN
 # ======================
 
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if USUARIOS.get(request.form["usuario"]) == request.form["password"]:
-            session["user"] = request.form["usuario"]
+        user = request.form.get("usuario")
+        password = request.form.get("password")
+
+        if user in USUARIOS and USUARIOS[user] == password:
+            session["user"] = user
             return redirect("/panel")
+
+        return render_template("login.html", error="Usuario o clave incorrectos")
+
     return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+# ======================
+# PANEL PRINCIPAL
+# ======================
 
 @app.route("/panel")
 def panel():
     if "user" not in session:
         return redirect("/")
 
-    conn = sqlite3.connect("cuotas.db")
+    conn = get_db()
     cur = conn.cursor()
 
+    # Personas
     cur.execute("SELECT id, nombre FROM personas")
     personas = cur.fetchall()
 
+    # Pagos
+    cur.execute("SELECT persona_id, mes FROM pagos")
+    pagos = cur.fetchall()
+
+    pagos_por_persona = {}
+    for pid, mes in pagos:
+        pagos_por_persona.setdefault(pid, set()).add(mes)
+
     datos = []
     for pid, nombre in personas:
-        cur.execute("SELECT mes FROM pagos WHERE persona_id = ?", (pid,))
-        pagos = {row[0] for row in cur.fetchall()}
+        estado = {}
+        for mes in MESES:
+            estado[mes] = mes in pagos_por_persona.get(pid, set())
 
         datos.append({
             "id": pid,
             "nombre": nombre,
-            "meses": {mes: mes in pagos for mes in MESES}
+            "meses": estado
         })
-
-    cur.execute("""
-        SELECT pagos.id, personas.nombre, pagos.mes, pagos.monto
-        FROM pagos
-        JOIN personas ON personas.id = pagos.persona_id
-        ORDER BY pagos.fecha DESC
-    """)
-    pagos = cur.fetchall()
 
     conn.close()
 
     return render_template(
         "panel.html",
         datos=datos,
-        meses=MESES,
-        pagos=pagos
+        meses=MESES
     )
 
-@app.route("/pago", methods=["GET", "POST"])
-def pago():
-    if "user" not in session:
-        return redirect("/")
-
-    conn = sqlite3.connect("cuotas.db")
-    cur = conn.cursor()
-
-    cur.execute("SELECT id, nombre FROM personas")
-    personas = cur.fetchall()
-
-    cur.execute("SELECT mes, monto FROM cuotas")
-    cuotas = cur.fetchall()
-
-    if request.method == "POST":
-        persona_id = request.form["persona"]
-        mes = request.form["mes"]
-
-        cur.execute("SELECT monto FROM cuotas WHERE mes = ?", (mes,))
-        monto = cur.fetchone()[0]
-
-        cur.execute("""
-            INSERT INTO pagos (persona_id, mes, monto, fecha)
-            VALUES (?, ?, ?, ?)
-        """, (persona_id, mes, monto, datetime.now().strftime("%Y-%m-%d")))
-
-        conn.commit()
-        conn.close()
-        return redirect("/panel")
-
-    conn.close()
-    return render_template("pago.html", personas=personas, cuotas=cuotas)
-
-@app.route("/recibo/<int:pago_id>")
-def recibo(pago_id):
-    conn = sqlite3.connect("cuotas.db")
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT personas.nombre, pagos.mes, pagos.monto
-        FROM pagos
-        JOIN personas ON personas.id = pagos.persona_id
-        WHERE pagos.id = ?
-    """, (pago_id,))
-    fila = cur.fetchone()
-    conn.close()
-
-    if not fila:
-        return "Recibo no encontrado"
-
-    pdf = generar_recibo(*fila)
-    return send_file(pdf, as_attachment=True,
-                     download_name="recibo.pdf",
-                     mimetype="application/pdf")
+# ======================
+# PERSONAS
+# ======================
 
 @app.route("/persona", methods=["GET", "POST"])
 def persona():
@@ -208,28 +163,78 @@ def persona():
         return redirect("/")
 
     if request.method == "POST":
-        conn = sqlite3.connect("cuotas.db")
+        nombre = request.form["nombre"]
+
+        conn = get_db()
         cur = conn.cursor()
-        cur.execute("INSERT INTO personas (nombre) VALUES (?)", (request.form["nombre"],))
+        cur.execute("INSERT INTO personas (nombre) VALUES (?)", (nombre,))
         conn.commit()
         conn.close()
+
         return redirect("/panel")
 
     return render_template("persona.html")
 
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
+# ======================
+# REGISTRAR PAGO
+# ======================
 
+@app.route("/pago", methods=["GET", "POST"])
+def pago():
+    if "user" not in session:
+        return redirect("/")
 
+    conn = get_db()
+    cur = conn.cursor()
 
+    cur.execute("SELECT id, nombre FROM personas")
+    personas = cur.fetchall()
 
+    cur.execute("SELECT mes, monto FROM cuotas ORDER BY mes")
+    cuotas = cur.fetchall()
 
+    if request.method == "POST":
+        persona_id = int(request.form["persona"])
+        mes = request.form["mes"]
 
+        cur.execute("SELECT monto FROM cuotas WHERE mes = ?", (mes,))
+        cuota = cur.fetchone()
 
+        if not cuota:
+            conn.close()
+            return "Ese mes no tiene cuota definida"
 
+        try:
+            cur.execute("""
+                INSERT INTO pagos (persona_id, mes, monto, fecha)
+                VALUES (?, ?, ?, ?)
+            """, (
+                persona_id,
+                mes,
+                cuota[0],
+                datetime.now().strftime("%Y-%m-%d")
+            ))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            conn.close()
+            return "Ese mes ya está pago"
 
+        conn.close()
+        return redirect("/panel")
+
+    conn.close()
+    return render_template(
+        "pago.html",
+        personas=personas,
+        cuotas=cuotas
+    )
+
+# ======================
+# MAIN
+# ======================
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 
