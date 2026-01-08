@@ -82,7 +82,27 @@ def cargar_cuotas_iniciales():
 
     conn.commit()
     conn.close()
+def generar_recibo(nombre, mes, monto, fecha):
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    ancho, alto = A4
 
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(50, alto - 50, "RECIBO DE PAGO")
+
+    c.setFont("Helvetica", 12)
+    c.drawString(50, alto - 100, f"Nombre: {nombre}")
+    c.drawString(50, alto - 130, f"Mes abonado: {mes}")
+    c.drawString(50, alto - 160, f"Monto: ${monto}")
+    c.drawString(50, alto - 190, f"Fecha de pago: {fecha}")
+
+    c.drawString(50, alto - 260, "Firma: ___________________________")
+
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return buffer
+    
 init_db()
 cargar_cuotas_iniciales()
 
@@ -238,13 +258,45 @@ def pago():
         personas=personas,
         cuotas=cuotas
     )
+    
+@app.route("/recibo/<int:pago_id>")
+def recibo(pago_id):
+    if "user" not in session:
+        return redirect("/")
 
+    conn = sqlite3.connect("cuotas.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT p.id, per.nombre, p.mes, p.monto, p.fecha
+        FROM pagos p
+        JOIN personas per ON p.persona_id = per.id
+        WHERE p.id = ?
+    """, (pago_id,))
+
+    pago = cur.fetchone()
+    conn.close()
+
+    if not pago:
+        return "Recibo no encontrado"
+
+    _, nombre, mes, monto, fecha = pago
+
+    pdf = generar_recibo(nombre, mes, monto, fecha)
+
+    return send_file(
+        pdf,
+        as_attachment=False,
+        download_name=f"recibo_{nombre}_{mes}.pdf",
+        mimetype="application/pdf"
+    )
 # ======================
 # MAIN
 # ======================
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
