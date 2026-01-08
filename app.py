@@ -145,12 +145,22 @@ def panel():
             "meses": estado
         })
 
+    pagos = [
+    {
+        "id": 1,
+        "nombre": "Juan Pérez",
+        "mes": "2026-01",
+        "monto": 5000
+    }
+]
+
     conn.close()
 
     return render_template(
         "panel.html",
         datos=datos,
-        meses=MESES
+        meses=MESES,
+        pagos=pagos
     )
 
 # ======================
@@ -235,6 +245,7 @@ def pago():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
