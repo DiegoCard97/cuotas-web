@@ -146,8 +146,17 @@ def panel():
     personas = cur.fetchall()
 
     # Pagos
-    cur.execute("SELECT persona_id, mes FROM pagos")
-    pagos = cur.fetchall()
+    cur.execute("""
+    SELECT 
+        pagos.id,
+        personas.nombre,
+        pagos.mes,
+        pagos.monto
+    FROM pagos
+    JOIN personas ON pagos.persona_id = personas.id
+    ORDER BY pagos.fecha DESC
+""")
+pagos = cur.fetchall()
 
     pagos_por_persona = {}
     for pid, mes in pagos:
@@ -296,6 +305,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
