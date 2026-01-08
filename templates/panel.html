@@ -99,11 +99,11 @@
 
     {% for pago in pagos %}
     <tr>
-        <td>{{ pago.nombre }}</td>
-        <td>{{ pago.mes }}</td>
-        <td>${{ pago.monto }}</td>
+        <td>{{ pago[1] }}</td>
+        <td>{{ pago[2] }}</td>
+        <td>${{ pago[3] }}</td>
         <td>
-            <a href="/recibo/{{ pago.id }}" target="_blank">📄 PDF</a>
+            <a href="/recibo/{{ pago[0] }}">📄 PDF</a>
         </td>
     </tr>
     {% endfor %}
