@@ -87,5 +87,27 @@
     {% endfor %}
 </table>
 
+<h2 style="margin-top:40px;">Pagos registrados</h2>
+
+<table>
+    <tr>
+        <th>Persona</th>
+        <th>Mes</th>
+        <th>Monto</th>
+        <th>Recibo</th>
+    </tr>
+
+    {% for pago in pagos %}
+    <tr>
+        <td>{{ pago.nombre }}</td>
+        <td>{{ pago.mes }}</td>
+        <td>${{ pago.monto }}</td>
+        <td>
+            <a href="/recibo/{{ pago.id }}" target="_blank">📄 PDF</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+    
 </body>
 </html>
