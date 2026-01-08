@@ -277,25 +277,25 @@ def recibo(pago_id):
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT p.id, per.nombre, p.mes, p.monto, p.fecha
-        FROM pagos p
-        JOIN personas per ON p.persona_id = per.id
-        WHERE p.id = ?
+        SELECT personas.nombre, pagos.mes, pagos.monto
+        FROM pagos
+        JOIN personas ON pagos.persona_id = personas.id
+        WHERE pagos.id = ?
     """, (pago_id,))
 
     pago = cur.fetchone()
     conn.close()
 
     if not pago:
-        return "Recibo no encontrado"
+        return "Pago no encontrado"
 
-    _, nombre, mes, monto, fecha = pago
+    nombre, mes, monto = pago
 
-    pdf = generar_recibo(nombre, mes, monto, fecha)
+    pdf = generar_recibo(nombre, mes, monto)
 
     return send_file(
         pdf,
-        as_attachment=False,
+        as_attachment=True,
         download_name=f"recibo_{nombre}_{mes}.pdf",
         mimetype="application/pdf"
     )
@@ -305,6 +305,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
