@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, send_file
 import sqlite3
 from datetime import datetime
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 # ======================
 # CONFIGURACIÓN
@@ -82,6 +85,7 @@ def cargar_cuotas_iniciales():
 
     conn.commit()
     conn.close()
+
 def generar_recibo(nombre, mes, monto, fecha):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -102,7 +106,7 @@ def generar_recibo(nombre, mes, monto, fecha):
     c.save()
     buffer.seek(0)
     return buffer
-    
+
 init_db()
 cargar_cuotas_iniciales()
 
@@ -130,7 +134,7 @@ def logout():
     return redirect("/")
 
 # ======================
-# PANEL PRINCIPAL
+# PANEL
 # ======================
 
 @app.route("/panel")
@@ -145,22 +149,24 @@ def panel():
     cur.execute("SELECT id, nombre FROM personas")
     personas = cur.fetchall()
 
-    # Pagos
+    # Pagos registrados
     cur.execute("""
-    SELECT 
-        pagos.id,
-        personas.nombre,
-        pagos.mes,
-        pagos.monto
-    FROM pagos
-    JOIN personas ON pagos.persona_id = personas.id
-    ORDER BY pagos.fecha DESC
-""")
-pagos = cur.fetchall()
+        SELECT 
+            pagos.id,
+            personas.nombre,
+            pagos.mes,
+            pagos.monto
+        FROM pagos
+        JOIN personas ON pagos.persona_id = personas.id
+        ORDER BY pagos.fecha DESC
+    """)
+    pagos = cur.fetchall()
 
+    # Pagos por persona
+    cur.execute("SELECT persona_id, mes FROM pagos")
     pagos_por_persona = {}
-    for pid, mes in pagos:
-        pagos_por_persona.setdefault(pid, set()).add(mes)
+    for persona_id, mes in cur.fetchall():
+        pagos_por_persona.setdefault(persona_id, set()).add(mes)
 
     datos = []
     for pid, nombre in personas:
@@ -173,15 +179,6 @@ pagos = cur.fetchall()
             "nombre": nombre,
             "meses": estado
         })
-
-    pagos = [
-    {
-        "id": 1,
-        "nombre": "Juan Pérez",
-        "mes": "2026-01",
-        "monto": 5000
-    }
-]
 
     conn.close()
 
@@ -215,7 +212,7 @@ def persona():
     return render_template("persona.html")
 
 # ======================
-# REGISTRAR PAGO
+# PAGOS
 # ======================
 
 @app.route("/pago", methods=["GET", "POST"])
@@ -267,17 +264,21 @@ def pago():
         personas=personas,
         cuotas=cuotas
     )
-    
+
+# ======================
+# RECIBO PDF
+# ======================
+
 @app.route("/recibo/<int:pago_id>")
 def recibo(pago_id):
     if "user" not in session:
         return redirect("/")
 
-    conn = sqlite3.connect("cuotas.db")
+    conn = get_db()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT personas.nombre, pagos.mes, pagos.monto
+        SELECT personas.nombre, pagos.mes, pagos.monto, pagos.fecha
         FROM pagos
         JOIN personas ON pagos.persona_id = personas.id
         WHERE pagos.id = ?
@@ -289,9 +290,9 @@ def recibo(pago_id):
     if not pago:
         return "Pago no encontrado"
 
-    nombre, mes, monto = pago
+    nombre, mes, monto, fecha = pago
 
-    pdf = generar_recibo(nombre, mes, monto)
+    pdf = generar_recibo(nombre, mes, monto, fecha)
 
     return send_file(
         pdf,
@@ -299,15 +300,13 @@ def recibo(pago_id):
         download_name=f"recibo_{nombre}_{mes}.pdf",
         mimetype="application/pdf"
     )
+
 # ======================
 # MAIN
 # ======================
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
 
 
 
