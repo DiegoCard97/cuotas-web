@@ -250,7 +250,7 @@ def pago():
         try:
             cur.execute("""
                 INSERT INTO pagos (persona_id, mes, monto, fecha)
-                VALUES (?, ?, ?, ?)
+                VALUES (%s, %s, %s)
             """, (
                 persona_id,
                 mes,
@@ -314,6 +314,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
