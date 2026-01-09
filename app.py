@@ -42,7 +42,7 @@ def init_db():
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS personas (
-            id SERIAL PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             nombre TEXT NOT NULL
         )
     """)
@@ -56,7 +56,7 @@ def init_db():
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS pagos (
-            id SERIAL PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             persona_id INTEGER NOT NULL,
             mes TEXT NOT NULL,
             monto INTEGER NOT NULL,
@@ -310,6 +310,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
