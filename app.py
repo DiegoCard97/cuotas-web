@@ -262,17 +262,24 @@ try:
     ))
 
     conn.commit()
+    return redirect("/panel")
 
 except Exception as e:
-    conn.rollback()
+    if conn:
+        conn.rollback()
     print("Error al registrar pago:", e)
+    return render_template(
+        "pago.html",
+        personas=personas,
+        cuotas=cuotas,
+        error="No se pudo registrar el pago"
+    )
 
 finally:
-    cur.close()
-    conn.close()
-        return redirect("/panel")
-
-    conn.close()
+    if cur:
+        cur.close()
+    if conn:
+        conn.close()
 
     return render_template(
         "pago.html",
@@ -322,6 +329,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
