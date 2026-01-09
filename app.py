@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, send_file
-import sqlite3
+import os
+import psycopg2
 from datetime import datetime
 import io
 from reportlab.lib.pagesizes import A4
@@ -30,9 +31,11 @@ USUARIOS = {
 # BASE DE DATOS
 # ======================
 
-def get_db():
-    return sqlite3.connect(DB_NAME)
-
+def get_db_connection():
+    return psycopg2.connect(
+        os.environ.get("DATABASE_URL"),
+        sslmode="require"
+    )
 def init_db():
     conn = get_db()
     cur = conn.cursor()
@@ -233,7 +236,7 @@ def pago():
         persona_id = int(request.form["persona"])
         mes = request.form["mes"]
 
-        cur.execute("SELECT monto FROM cuotas WHERE mes = ?", (mes,))
+        cur.execute("SELECT monto FROM cuotas WHERE mes = %s", (mes,))
         cuota = cur.fetchone()
 
         if not cuota:
@@ -281,7 +284,7 @@ def recibo(pago_id):
         SELECT personas.nombre, pagos.mes, pagos.monto, pagos.fecha
         FROM pagos
         JOIN personas ON pagos.persona_id = personas.id
-        WHERE pagos.id = ?
+        WHERE pagos.id = %s
     """, (pago_id,))
 
     pago = cur.fetchone()
@@ -307,6 +310,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
