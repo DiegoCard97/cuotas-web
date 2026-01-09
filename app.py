@@ -37,7 +37,7 @@ def get_db_connection():
         sslmode="require"
     )
 def init_db():
-    conn = get_db()
+    conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute("""
@@ -70,7 +70,7 @@ def init_db():
     conn.close()
 
 def cargar_cuotas_iniciales():
-    conn = get_db()
+    conn = get_db_connection()
     cur = conn.cursor()
 
     cuotas = [
@@ -145,7 +145,7 @@ def panel():
     if "user" not in session:
         return redirect("/")
 
-    conn = get_db()
+    conn = get_db_connection()
     cur = conn.cursor()
 
     # Personas
@@ -204,7 +204,7 @@ def persona():
     if request.method == "POST":
         nombre = request.form["nombre"]
 
-        conn = get_db()
+        conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("INSERT INTO personas (nombre) VALUES (?)", (nombre,))
         conn.commit()
@@ -223,7 +223,7 @@ def pago():
     if "user" not in session:
         return redirect("/")
 
-    conn = get_db()
+    conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute("SELECT id, nombre FROM personas")
@@ -277,7 +277,7 @@ def recibo(pago_id):
     if "user" not in session:
         return redirect("/")
 
-    conn = get_db()
+    conn = get_db_connection()
     cur = conn.cursor()
 
     cur.execute("""
@@ -310,6 +310,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
