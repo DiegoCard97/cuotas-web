@@ -247,8 +247,7 @@ def pago():
             conn.close()
             return "Ese mes no tiene cuota definida"
 
-        try:
-            try:
+try:
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -274,6 +273,7 @@ finally:
         return redirect("/panel")
 
     conn.close()
+
     return render_template(
         "pago.html",
         personas=personas,
@@ -322,6 +322,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
