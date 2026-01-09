@@ -82,9 +82,13 @@ def cargar_cuotas_iniciales():
 
     for mes, monto in cuotas:
         cur.execute(
-            "INSERT OR IGNORE INTO cuotas (mes, monto) VALUES (?, ?)",
-            (mes, monto)
-        )
+    """
+    INSERT INTO cuotas (mes, monto)
+    VALUES (%s, %s)
+    ON CONFLICT (mes) DO NOTHING
+    """,
+    (mes, monto)
+)
 
     conn.commit()
     conn.close()
@@ -206,7 +210,7 @@ def persona():
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("INSERT INTO personas (nombre) VALUES (?)", (nombre,))
+        cur.execute("INSERT INTO personas (nombre) VALUES (%s)", (nombre,))
         conn.commit()
         conn.close()
 
@@ -310,6 +314,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
