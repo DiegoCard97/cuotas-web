@@ -248,21 +248,29 @@ def pago():
             return "Ese mes no tiene cuota definida"
 
         try:
-            cur.execute("""
-                INSERT INTO pagos (persona_id, mes, monto, fecha)
-                VALUES (%s, %s, %s)
-            """, (
-                persona_id,
-                mes,
-                cuota[0],
-                datetime.now().strftime("%Y-%m-%d")
-            ))
-            conn.commit()
-        except sqlite3.IntegrityError:
-            conn.close()
-            return "Ese mes ya está pago"
+            try:
+    conn = get_db_connection()
+    cur = conn.cursor()
 
-        conn.close()
+    cur.execute("""
+        INSERT INTO pagos (persona_id, mes, monto, fecha)
+        VALUES (%s, %s, %s, %s)
+    """, (
+        persona_id,
+        mes,
+        monto,
+        datetime.now().strftime("%Y-%m-%d")
+    ))
+
+    conn.commit()
+
+except Exception as e:
+    conn.rollback()
+    print("Error al registrar pago:", e)
+
+finally:
+    cur.close()
+    conn.close()
         return redirect("/panel")
 
     conn.close()
@@ -314,6 +322,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
