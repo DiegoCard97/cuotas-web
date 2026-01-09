@@ -244,43 +244,42 @@ def pago():
         cuota = cur.fetchone()
 
         if not cuota:
+            cur.close()
             conn.close()
             return "Ese mes no tiene cuota definida"
 
-try:
-    conn = get_db_connection()
-    cur = conn.cursor()
+        monto = cuota[0]
 
-    cur.execute("""
-        INSERT INTO pagos (persona_id, mes, monto, fecha)
-        VALUES (%s, %s, %s, %s)
-    """, (
-        persona_id,
-        mes,
-        monto,
-        datetime.now().strftime("%Y-%m-%d")
-    ))
+        try:
+            cur.execute("""
+                INSERT INTO pagos (persona_id, mes, monto, fecha)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                persona_id,
+                mes,
+                monto,
+                datetime.now().strftime("%Y-%m-%d")
+            ))
 
-    conn.commit()
-    return redirect("/panel")
+            conn.commit()
+            return redirect("/panel")
 
-except Exception as e:
-    if conn:
-        conn.rollback()
-    print("Error al registrar pago:", e)
-    return render_template(
-        "pago.html",
-        personas=personas,
-        cuotas=cuotas,
-        error="No se pudo registrar el pago"
-    )
+        except Exception as e:
+            conn.rollback()
+            print("Error al registrar pago:", e)
+            return render_template(
+                "pago.html",
+                personas=personas,
+                cuotas=cuotas,
+                error="No se pudo registrar el pago"
+            )
 
-finally:
-    if cur:
-        cur.close()
-    if conn:
-        conn.close()
+        finally:
+            cur.close()
+            conn.close()
 
+    cur.close()
+    conn.close()
     return render_template(
         "pago.html",
         personas=personas,
@@ -329,6 +328,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
