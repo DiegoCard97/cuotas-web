@@ -206,7 +206,7 @@ def panel():
 # PERSONAS
 # ======================
 
-@app.route("/personas")
+@app.route("/personas", methods=["GET", "POST"])
 def personas():
     if "user" not in session:
         return redirect("/")
@@ -214,6 +214,20 @@ def personas():
     conn = get_db_connection()
     cur = conn.cursor()
 
+    # AGREGAR PERSONA
+    if request.method == "POST":
+        nombre = request.form["nombre"].strip()
+
+        if nombre:
+            cur.execute(
+                "INSERT INTO personas (nombre, activo) VALUES (%s, TRUE)",
+                (nombre,)
+            )
+            conn.commit()
+
+        return redirect("/personas")
+
+    # LISTAR PERSONAS
     cur.execute("""
         SELECT id, nombre, activo
         FROM personas
@@ -224,7 +238,10 @@ def personas():
     cur.close()
     conn.close()
 
-    return render_template("personas.html", personas=personas)
+    return render_template(
+        "personas.html",
+        personas=personas
+    )
 
 @app.route("/personas/editar/<int:persona_id>", methods=["GET", "POST"])
 def editar_persona(persona_id):
@@ -425,6 +442,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
