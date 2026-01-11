@@ -168,33 +168,57 @@ def panel():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT id, nombre FROM personas WHERE activo = TRUE")
+    # Personas activas con su cuadro
+    cur.execute("""
+        SELECT id, nombre, cuadro
+        FROM personas
+        WHERE activo = TRUE
+        ORDER BY cuadro, nombre
+    """)
     personas = cur.fetchall()
 
+    # Pagos registrados
     cur.execute("""
-        SELECT pagos.id, personas.nombre, pagos.mes, pagos.monto
+        SELECT persona_id, mes
         FROM pagos
-        JOIN personas ON pagos.persona_id = personas.id
-        ORDER BY pagos.fecha DESC
     """)
-    pagos = cur.fetchall()
-
-    cur.execute("SELECT persona_id, mes FROM pagos")
     pagos_por_persona = {}
-    for pid, mes in cur.fetchall():
-        pagos_por_persona.setdefault(pid, set()).add(mes)
+    for persona_id, mes in cur.fetchall():
+        pagos_por_persona.setdefault(persona_id, set()).add(mes)
 
-    datos = []
-    for pid, nombre in personas:
-        datos.append({
+    # Estructura por cuadro
+    panel_por_cuadro = {
+        "MANADA": [],
+        "SCOUT": [],
+        "RAIDER": [],
+        "ROVER": []
+    }
+
+    for pid, nombre, cuadro in personas:
+        estado_meses = {}
+        for mes in MESES:
+            estado_meses[mes] = mes in pagos_por_persona.get(pid, set())
+
+        persona_data = {
+            "id": pid,
             "nombre": nombre,
-            "meses": {mes: mes in pagos_por_persona.get(pid, set()) for mes in MESES}
-        })
+            "meses": estado_meses
+        }
+
+        # Por las dudas, si viene algo raro en BD
+        if cuadro not in panel_por_cuadro:
+            cuadro = "SCOUT"
+
+        panel_por_cuadro[cuadro].append(persona_data)
 
     cur.close()
     conn.close()
 
-    return render_template("panel.html", datos=datos, meses=MESES, pagos=pagos)
+    return render_template(
+        "panel.html",
+        panel=panel_por_cuadro,
+        meses=MESES
+    )
 
 # ======================
 # PERSONAS
@@ -234,6 +258,7 @@ def personas():
     conn.close()
 
     return render_template("personas.html", personas=personas)
+
 
 
 
