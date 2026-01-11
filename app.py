@@ -48,6 +48,11 @@ def init_db():
     """)
 
     cur.execute("""
+        ALTER TABLE personas
+        ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE
+    """)
+    
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS cuotas (
             mes TEXT PRIMARY KEY,
             monto INTEGER NOT NULL
@@ -200,23 +205,25 @@ def panel():
 # PERSONAS
 # ======================
 
-@app.route("/persona", methods=["GET", "POST"])
-def persona():
+@app.route("/personas")
+def personas():
     if "user" not in session:
         return redirect("/")
 
-    if request.method == "POST":
-        nombre = request.form["nombre"]
+    conn = get_db_connection()
+    cur = conn.cursor()
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO personas (nombre) VALUES (%s)", (nombre,))
-        conn.commit()
-        conn.close()
+    cur.execute("""
+        SELECT id, nombre, activo
+        FROM personas
+        ORDER BY nombre
+    """)
+    personas = cur.fetchall()
 
-        return redirect("/panel")
+    cur.close()
+    conn.close()
 
-    return render_template("persona.html")
+    return render_template("personas.html", personas=personas)
 
 # ======================
 # PAGOS
@@ -230,7 +237,12 @@ def pago():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT id, nombre FROM personas")
+cur.execute("""
+    SELECT id, nombre
+    FROM personas
+    WHERE activo = TRUE
+    ORDER BY nombre
+""")
     personas = cur.fetchall()
 
     cur.execute("SELECT mes, monto FROM cuotas ORDER BY mes")
@@ -328,6 +340,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
