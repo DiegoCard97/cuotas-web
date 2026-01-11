@@ -259,6 +259,26 @@ def editar_persona(id):
         conn.close()
         return redirect("/personas")
 
+    @app.route("/personas/desactivar/<int:persona_id>")
+def desactivar_persona(persona_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE personas
+        SET activo = FALSE
+        WHERE id = %s
+    """, (persona_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/personas")
+    
     cur.close()
     conn.close()
 
@@ -384,6 +404,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
