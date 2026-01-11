@@ -260,17 +260,19 @@ def editar_persona(persona_id):
     if request.method == "POST":
         nombre = request.form["nombre"]
         cuadro = request.form["cuadro"]
-    cur.execute("""
-        UPDATE personas
-        SET nombre = %s, cuadro = %s
-        WHERE id = %s
-    """, (nombre, cuadro, persona_id))
+
+        cur.execute("""
+            UPDATE personas
+            SET nombre = %s, cuadro = %s
+            WHERE id = %s
+        """, (nombre, cuadro, persona_id))
 
         conn.commit()
         cur.close()
         conn.close()
         return redirect("/personas")
 
+    # GET (mostrar formulario)
     cur.execute("""
         SELECT id, nombre, cuadro
         FROM personas
@@ -281,7 +283,7 @@ def editar_persona(persona_id):
     cur.close()
     conn.close()
 
-    return render_template("persona_editar.html", persona=persona)
+    return render_template("editar_persona.html", persona=persona)
 
 @app.route("/personas/desactivar/<int:persona_id>")
 def desactivar_persona(persona_id):
@@ -537,6 +539,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
