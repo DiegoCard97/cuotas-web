@@ -9,20 +9,10 @@
             font-family: Arial, sans-serif;
         }
 
-        h2 {
-            margin-top: 40px;
-            padding: 8px;
-        }
-
-        .manada { background-color: #fff3cd; }
-        .scout  { background-color: #d4edda; }
-        .raider { background-color: #d1ecf1; }
-        .rover  { background-color: #eb4c2f; }
-
         table {
             border-collapse: collapse;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
 
         th, td {
@@ -62,6 +52,12 @@
         a.boton:hover {
             background-color: #1a5dc9;
         }
+
+        h2 {
+            margin-top: 40px;
+            background-color: #ddd;
+            padding: 10px;
+        }
     </style>
 </head>
 
@@ -70,22 +66,15 @@
 <h1>Panel de cuotas</h1>
 
 <div class="acciones">
-    <a href="/personas" class="boton">➕ Personas</a>
+    <a href="/personas" class="boton">➕ Agregar persona</a>
     <a href="/pago" class="boton">💰 Registrar pago</a>
     <a href="/cuotas" class="boton">📆 Administrar cuotas</a>
     <a href="/pagos" class="boton">📄 Administrar pagos</a>
     <a href="/logout" class="boton">🚪 Salir</a>
 </div>
 
-{% set cuadros = [
-    ("MANADA", "manada"),
-    ("SCOUT", "scout"),
-    ("RAIDER", "raider"),
-    ("ROVER", "rover")
-] %}
-
-{% for nombre_cuadro, clase in cuadros %}
-    <h2 class="{{ clase }}">{{ nombre_cuadro }}</h2>
+{% for grupo in datos|groupby('cuadro') %}
+    <h2>{{ grupo.grouper or 'SIN CUADRO' }}</h2>
 
     <table>
         <tr>
@@ -95,7 +84,7 @@
             {% endfor %}
         </tr>
 
-        {% for p in datos if p.cuadro and p.cuadro|upper|trim == nombre_cuadro %}
+        {% for p in grupo.list %}
         <tr>
             <td><strong>{{ p.nombre }}</strong></td>
 
@@ -133,20 +122,9 @@
     {% endfor %}
 </table>
 
-<h2>Sin cuadro asignado</h2>
+<a href="/personas">Administrar personas</a>
 
-<table>
-    <tr>
-        <th>Persona</th>
-    </tr>
-
-    {% for p in datos if not p.cuadro %}
-    <tr>
-        <td>{{ p.nombre }}</td>
-    </tr>
-    {% endfor %}
-</table>
-    
 </body>
 </html>
+
 
