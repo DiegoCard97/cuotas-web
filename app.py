@@ -393,6 +393,58 @@ def pago():
         personas=personas,
         cuotas=cuotas
     )
+
+# ======================
+# ADMINISTRAR PAGOS
+# ======================
+
+@app.route("/pagos")
+def administrar_pagos():
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            pagos.id,
+            personas.nombre,
+            pagos.mes,
+            pagos.monto,
+            pagos.fecha
+        FROM pagos
+        JOIN personas ON pagos.persona_id = personas.id
+        ORDER BY pagos.fecha DESC
+    """)
+
+    pagos = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "pagos.html",
+        pagos=pagos
+    )
+    
+@app.route("/pagos/borrar/<int:pago_id>")
+def borrar_pago(pago_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("DELETE FROM pagos WHERE id = %s", (pago_id,))
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    return redirect("/pagos")
+
+
 # ======================
 # RECIBO PDF
 # ======================
@@ -479,6 +531,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
