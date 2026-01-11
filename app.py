@@ -215,17 +215,21 @@ def personas():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # AGREGAR PERSONA
-    if request.method == "POST":
+# AGREGAR PERSONA
+if request.method == "POST":
     nombre = request.form["nombre"].strip()
-    cuadro = request.form.get("cuadro", "SCOUT")  # valor por defecto si no llega
+    cuadro = request.form.get("cuadro", "SCOUT")  # valor por defecto
 
     if nombre:
         cur.execute(
-            "INSERT INTO personas (nombre, activo, cuadro) VALUES (%s, TRUE, %s)",
+            """
+            INSERT INTO personas (nombre, activo, cuadro)
+            VALUES (%s, TRUE, %s)
+            """,
             (nombre, cuadro)
         )
         conn.commit()
+
     return redirect("/personas")
 
 
@@ -533,6 +537,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
