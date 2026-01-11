@@ -259,7 +259,7 @@ def editar_persona(id):
         conn.close()
         return redirect("/personas")
 
-    @app.route("/personas/desactivar/<int:persona_id>")
+@app.route("/personas/desactivar/<int:persona_id>")
 def desactivar_persona(persona_id):
     if "user" not in session:
         return redirect("/")
@@ -404,6 +404,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
