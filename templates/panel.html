@@ -5,40 +5,13 @@
     <title>Panel de Cuotas</title>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 40px;
-        }
-
-        th, td {
-            border: 1px solid #999;
-            padding: 6px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #eee;
-        }
-
-        .ok {
-            background-color: #c8f7c5;
-            font-weight: bold;
-        }
-
-        .no {
-            background-color: #f7c5c5;
-            font-weight: bold;
-        }
-
-        .acciones {
-            margin-bottom: 20px;
-        }
-
+        body { font-family: Arial, sans-serif; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }
+        th, td { border: 1px solid #999; padding: 6px; text-align: center; }
+        th { background-color: #eee; }
+        .ok { background-color: #c8f7c5; font-weight: bold; }
+        .no { background-color: #f7c5c5; font-weight: bold; }
+        .acciones { margin-bottom: 20px; }
         a.boton {
             display: inline-block;
             padding: 8px 12px;
@@ -48,23 +21,12 @@
             border-radius: 4px;
             margin-right: 10px;
         }
-
-        a.boton:hover {
-            background-color: #1a5dc9;
-        }
-
-        h2 {
-            margin-top: 40px;
-            background-color: #ddd;
-            padding: 10px;
-        }
+        a.boton:hover { background-color: #1a5dc9; }
     </style>
 </head>
 
 <body>
-    
-<p>DEBUG datos: {{ datos }}</p>
-<p>DEBUG cantidad: {{ datos|length }}</p>
+
 <h1>Panel de cuotas</h1>
 
 <div class="acciones">
@@ -75,9 +37,12 @@
     <a href="/logout" class="boton">🚪 Salir</a>
 </div>
 
-{% for grupo in datos|groupby('cuadro') %}
-    <h2>{{ grupo.grouper or 'SIN CUADRO' }}</h2>
+{% for nombre_cuadro, personas in cuadros.items() %}
+    <h2>{{ nombre_cuadro }}</h2>
 
+    {% if personas|length == 0 %}
+        <p><em>No hay personas en este cuadro</em></p>
+    {% else %}
     <table>
         <tr>
             <th>Persona</th>
@@ -86,10 +51,9 @@
             {% endfor %}
         </tr>
 
-        {% for p in grupo.list %}
+        {% for p in personas %}
         <tr>
             <td><strong>{{ p.nombre }}</strong></td>
-
             {% for mes in meses %}
                 {% if p.meses[mes] %}
                     <td class="ok">✔</td>
@@ -100,6 +64,7 @@
         </tr>
         {% endfor %}
     </table>
+    {% endif %}
 {% endfor %}
 
 <h2>Pagos registrados</h2>
@@ -117,9 +82,7 @@
         <td>{{ pago[1] }}</td>
         <td>{{ pago[2] }}</td>
         <td>${{ pago[3] }}</td>
-        <td>
-            <a href="/recibo/{{ pago[0] }}">📄 PDF</a>
-        </td>
+        <td><a href="/recibo/{{ pago[0] }}">📄 PDF</a></td>
     </tr>
     {% endfor %}
 </table>
