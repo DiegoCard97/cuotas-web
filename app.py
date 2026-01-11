@@ -275,7 +275,7 @@ def editar_persona(persona_id):
     cur.close()
     conn.close()
 
-    return render_template("personas.html", persona=persona)
+    return render_template("persona_editar.html", persona=persona)
 
 @app.route("/personas/desactivar/<int:persona_id>")
 def desactivar_persona(persona_id):
@@ -297,10 +297,6 @@ def desactivar_persona(persona_id):
 
     return redirect("/personas")
     
-    cur.close()
-    conn.close()
-
-    return render_template("persona_editar.html", persona=persona)
 
 @app.route("/personas/reactivar/<int:persona_id>")
 def reactivar_persona(persona_id):
@@ -442,6 +438,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
