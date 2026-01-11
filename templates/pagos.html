@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Administrar pagos</title>
+
+    <style>
+        body { font-family: Arial; }
+
+        table {
+            border-collapse: collapse;
+            width: 90%;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 6px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #eee;
+        }
+
+        a.borrar {
+            color: red;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a.borrar:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Administrar pagos</h1>
+
+<table>
+    <tr>
+        <th>Persona</th>
+        <th>Mes</th>
+        <th>Monto</th>
+        <th>Fecha</th>
+        <th>Acción</th>
+    </tr>
+
+    {% for id, nombre, mes, monto, fecha in pagos %}
+    <tr>
+        <td>{{ nombre }}</td>
+        <td>{{ mes }}</td>
+        <td>${{ monto }}</td>
+        <td>{{ fecha }}</td>
+        <td>
+            <a class="borrar" href="/pagos/borrar/{{ id }}"
+               onclick="return confirm('¿Eliminar este pago?')">
+               ❌ Eliminar
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="/panel">⬅ Volver al panel</a>
+
+</body>
+</html>
