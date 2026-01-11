@@ -25,6 +25,7 @@ USUARIOS = {
     "admin": "1234",
     "Tesorero": "cuotas2025",
     "Secretaria": "scout"
+    "Jenni": "LobaTenaz"
 }
 
 # ======================
@@ -382,6 +383,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
