@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Editar persona</title>
+</head>
+<body>
+
+<h2>Editar persona</h2>
+
+<form method="post">
+    <input
+        type="text"
+        name="nombre"
+        value="{{ persona[1] }}"
+        required
+    >
+    <br><br>
+    <button type="submit">Guardar cambios</button>
+</form>
+
+<br>
+<a href="/personas">Cancelar</a>
+
+</body>
+</html>
