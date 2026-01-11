@@ -95,7 +95,7 @@
             {% endfor %}
         </tr>
 
-        {% for p in datos if p.cuadro == nombre_cuadro %}
+        {% for p in datos if p.cuadro and p.cuadro|upper|trim == nombre_cuadro %}
         <tr>
             <td><strong>{{ p.nombre }}</strong></td>
 
@@ -133,6 +133,20 @@
     {% endfor %}
 </table>
 
+<h2>Sin cuadro asignado</h2>
+
+<table>
+    <tr>
+        <th>Persona</th>
+    </tr>
+
+    {% for p in datos if not p.cuadro %}
+    <tr>
+        <td>{{ p.nombre }}</td>
+    </tr>
+    {% endfor %}
+</table>
+    
 </body>
 </html>
 
