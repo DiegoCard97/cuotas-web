@@ -225,6 +225,45 @@ def personas():
 
     return render_template("personas.html", personas=personas)
 
+@app.route("/personas/editar/<int:id>", methods=["GET", "POST"])
+def editar_persona(id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtener persona actual
+    cur.execute(
+        "SELECT id, nombre FROM personas WHERE id = %s",
+        (id,)
+    )
+    persona = cur.fetchone()
+
+    if not persona:
+        cur.close()
+        conn.close()
+        return "Persona no encontrada"
+
+    if request.method == "POST":
+        nuevo_nombre = request.form["nombre"]
+
+        cur.execute(
+            "UPDATE personas SET nombre = %s WHERE id = %s",
+            (nuevo_nombre, id)
+        )
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        return redirect("/personas")
+
+    cur.close()
+    conn.close()
+
+    return render_template("persona_editar.html", persona=persona)
+
+
 # ======================
 # PAGOS
 # ======================
@@ -334,12 +373,16 @@ def recibo(pago_id):
         mimetype="application/pdf"
     )
 
+
+
+
 # ======================
 # MAIN
 # ======================
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
