@@ -54,7 +54,7 @@ cur.execute("""
     cur.execute("""
         ALTER TABLE personas
         ADD COLUMN IF NOT EXISTS cuadro TEXT DEFAULT 'SCOUT',
-        ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE;
+        ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE
     """)
     
     cur.execute("""
@@ -558,6 +558,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
