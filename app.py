@@ -50,6 +50,7 @@ def init_db():
 
     cur.execute("""
         ALTER TABLE personas
+        ADD COLUMN IF NOT EXISTS cuadro TEXT DEFAULT 'SCOUT'
         ADD COLUMN IF NOT EXISTS activo BOOLEAN DEFAULT TRUE
     """)
     
@@ -216,16 +217,17 @@ def personas():
 
     # AGREGAR PERSONA
     if request.method == "POST":
-        nombre = request.form["nombre"].strip()
+    nombre = request.form["nombre"].strip()
+    cuadro = request.form.get("cuadro", "SCOUT")  # valor por defecto si no llega
 
-        if nombre:
-            cur.execute(
-                "INSERT INTO personas (nombre, activo) VALUES (%s, TRUE)",
-                (nombre,)
-            )
-            conn.commit()
+    if nombre:
+        cur.execute(
+            "INSERT INTO personas (nombre, activo, cuadro) VALUES (%s, TRUE, %s)",
+            (nombre, cuadro)
+        )
+        conn.commit()
+    return redirect("/personas")
 
-        return redirect("/personas")
 
     # LISTAR PERSONAS
     cur.execute("""
@@ -531,6 +533,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
