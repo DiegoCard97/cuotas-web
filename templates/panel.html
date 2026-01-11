@@ -38,6 +38,9 @@
 </div>
 
 {% for nombre_cuadro, personas in cuadros.items() %}
+    {% set clase = "cuadro-" + nombre_cuadro|lower %}
+    <div class="{{ clase }}">
+
     <h2>{{ nombre_cuadro }}</h2>
 
     {% if personas|length == 0 %}
@@ -65,7 +68,10 @@
         {% endfor %}
     </table>
     {% endif %}
+
+    </div>
 {% endfor %}
+
 
 <h2>Pagos registrados</h2>
 
