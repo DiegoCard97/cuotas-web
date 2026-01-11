@@ -9,9 +9,20 @@
             font-family: Arial, sans-serif;
         }
 
+        h2 {
+            margin-top: 40px;
+            padding: 8px;
+        }
+
+        .manada { background-color: #fff3cd; }
+        .scout  { background-color: #d4edda; }
+        .raider { background-color: #d1ecf1; }
+        .rover  { background-color: #eb4c2f; }
+
         table {
             border-collapse: collapse;
             width: 100%;
+            margin-bottom: 20px;
         }
 
         th, td {
@@ -59,37 +70,48 @@
 <h1>Panel de cuotas</h1>
 
 <div class="acciones">
-    <a href="/personas" class="boton">➕ Agregar persona</a>
+    <a href="/personas" class="boton">➕ Personas</a>
     <a href="/pago" class="boton">💰 Registrar pago</a>
     <a href="/cuotas" class="boton">📆 Administrar cuotas</a>
     <a href="/pagos" class="boton">📄 Administrar pagos</a>
     <a href="/logout" class="boton">🚪 Salir</a>
 </div>
 
-<table>
-    <tr>
-        <th>Persona</th>
-        {% for mes in meses %}
-            <th>{{ mes }}</th>
+{% set cuadros = [
+    ("MANADA", "manada"),
+    ("SCOUT", "scout"),
+    ("RAIDER", "raider"),
+    ("ROVER", "rover")
+] %}
+
+{% for nombre_cuadro, clase in cuadros %}
+    <h2 class="{{ clase }}">{{ nombre_cuadro }}</h2>
+
+    <table>
+        <tr>
+            <th>Persona</th>
+            {% for mes in meses %}
+                <th>{{ mes }}</th>
+            {% endfor %}
+        </tr>
+
+        {% for p in datos if p.cuadro == nombre_cuadro %}
+        <tr>
+            <td><strong>{{ p.nombre }}</strong></td>
+
+            {% for mes in meses %}
+                {% if p.meses[mes] %}
+                    <td class="ok">✔</td>
+                {% else %}
+                    <td class="no">❌</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
         {% endfor %}
-    </tr>
+    </table>
+{% endfor %}
 
-    {% for p in datos %}
-    <tr>
-        <td><strong>{{ p.nombre }}</strong> ({{ p.cuadro }})</td>
-
-        {% for mes in meses %}
-            {% if p.meses[mes] %}
-                <td class="ok">✔</td>
-            {% else %}
-                <td class="no">❌</td>
-            {% endif %}
-        {% endfor %}
-    </tr>
-    {% endfor %}
-</table>
-
-<h2 style="margin-top:40px;">Pagos registrados</h2>
+<h2>Pagos registrados</h2>
 
 <table>
     <tr>
@@ -111,6 +133,6 @@
     {% endfor %}
 </table>
 
-<a href="/personas">Administrar personas</a>
 </body>
 </html>
+
