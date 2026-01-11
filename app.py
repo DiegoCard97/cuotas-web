@@ -215,22 +215,38 @@ def personas():
     conn = get_db_connection()
     cur = conn.cursor()
 
-# AGREGAR PERSONA
-if request.method == "POST":
-    nombre = request.form["nombre"].strip()
-    cuadro = request.form.get("cuadro", "SCOUT")  # valor por defecto
+    # AGREGAR PERSONA
+    if request.method == "POST":
+        nombre = request.form["nombre"].strip()
+        cuadro = request.form.get("cuadro", "SCOUT")  # valor por defecto
 
-    if nombre:
-        cur.execute(
-            """
-            INSERT INTO personas (nombre, activo, cuadro)
-            VALUES (%s, TRUE, %s)
-            """,
-            (nombre, cuadro)
-        )
-        conn.commit()
+        if nombre:
+            cur.execute(
+                """
+                INSERT INTO personas (nombre, activo, cuadro)
+                VALUES (%s, TRUE, %s)
+                """,
+                (nombre, cuadro)
+            )
+            conn.commit()
 
-    return redirect("/personas")
+        cur.close()
+        conn.close()
+        return redirect("/personas")
+
+    # GET → listar personas
+    cur.execute("""
+        SELECT id, nombre, cuadro, activo
+        FROM personas
+        ORDER BY cuadro, nombre
+    """)
+    personas = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template("personas.html", personas=personas)
+
 
 
     # LISTAR PERSONAS
@@ -539,6 +555,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
