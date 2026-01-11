@@ -22,6 +22,18 @@
         value="{{ persona[1] if persona }}"
     >
     <br><br>
+    <label for="cuadro">Cuadro:</label>
+    <select name="cuadro" id="cuadro" required>
+        <option value="MANADA" {% if persona and persona[2] == 'MANADA' %}selected{% endif %}>MANADA</option>
+        <option value="SCOUT" {% if persona and persona[2] == 'SCOUT' %}selected{% endif %}>SCOUT</option>
+        <option value="RAIDER" {% if persona and persona[2] == 'RAIDER' %}selected{% endif %}>RAIDER</option>
+        <option value="ROVER" {% if persona and persona[2] == 'ROVER' %}selected{% endif %}>ROVER</option>
+    </select>
+
+    <br><br>
+    <button type="submit">
+        {% if persona %}Actualizar{% else %}Guardar{% endif %}
+    </button>
     <button type="submit">
         {% if persona %}
             Actualizar
