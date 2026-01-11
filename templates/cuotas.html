@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Administrar cuotas</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 60%;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 6px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #eee;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 4px;
+        }
+
+        button {
+            padding: 4px 8px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Administrar cuotas</h1>
+
+<table>
+    <tr>
+        <th>Mes</th>
+        <th>Monto</th>
+        <th>Acción</th>
+    </tr>
+
+    {% for mes, monto in cuotas %}
+    <tr>
+        <form method="post">
+            <td>{{ mes }}</td>
+            <td>
+                <input type="hidden" name="mes" value="{{ mes }}">
+                <input type="number" name="monto" value="{{ monto }}" required>
+            </td>
+            <td>
+                <button type="submit">Guardar</button>
+            </td>
+        </form>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/panel">⬅ Volver al panel</a>
+
+</body>
+</html>
