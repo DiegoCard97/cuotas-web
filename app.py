@@ -258,8 +258,8 @@ def editar_persona(persona_id):
     cur = conn.cursor()
 
     if request.method == "POST":
-    nombre = request.form["nombre"]
-    cuadro = request.form["cuadro"]
+        nombre = request.form["nombre"]
+        cuadro = request.form["cuadro"]
     cur.execute("""
         UPDATE personas
         SET nombre = %s, cuadro = %s
@@ -537,6 +537,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
