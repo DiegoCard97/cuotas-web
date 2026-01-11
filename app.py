@@ -277,14 +277,16 @@ def pago():
     conn = get_db_connection()
     cur = conn.cursor()
 
-cur.execute("""
-    SELECT id, nombre
-    FROM personas
-    WHERE activo = TRUE
-    ORDER BY nombre
-""")
+    # Personas activas
+    cur.execute("""
+        SELECT id, nombre
+        FROM personas
+        WHERE activo = TRUE
+        ORDER BY nombre
+    """)
     personas = cur.fetchall()
 
+    # Cuotas
     cur.execute("SELECT mes, monto FROM cuotas ORDER BY mes")
     cuotas = cur.fetchall()
 
@@ -337,7 +339,6 @@ cur.execute("""
         personas=personas,
         cuotas=cuotas
     )
-
 # ======================
 # RECIBO PDF
 # ======================
@@ -383,6 +384,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
