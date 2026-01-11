@@ -28,7 +28,9 @@
             <a href="/personas/editar/{{ p[0] }}">Editar</a>
 
             {% if p[2] %}
-                | <a href="/personas/desactivar/{{ p[0] }}">Desactivar</a>
+                <a href="/personas/desactivar/{{ p[0] }}">Desactivar</a>
+            {% else %}
+                <a href="/personas/reactivar/{{ p[0] }}">Reactivar</a>
             {% endif %}
         </td>
     </tr>
