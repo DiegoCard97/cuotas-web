@@ -226,38 +226,39 @@ def personas():
 
     return render_template("personas.html", personas=personas)
 
-@app.route("/personas/editar/<int:id>", methods=["GET", "POST"])
-def editar_persona(id):
+@app.route("/personas/editar/<int:persona_id>", methods=["GET", "POST"])
+def editar_persona(persona_id):
     if "user" not in session:
         return redirect("/")
 
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Obtener persona actual
-    cur.execute(
-        "SELECT id, nombre FROM personas WHERE id = %s",
-        (id,)
-    )
-    persona = cur.fetchone()
-
-    if not persona:
-        cur.close()
-        conn.close()
-        return "Persona no encontrada"
-
     if request.method == "POST":
-        nuevo_nombre = request.form["nombre"]
+        nombre = request.form["nombre"]
 
-        cur.execute(
-            "UPDATE personas SET nombre = %s WHERE id = %s",
-            (nuevo_nombre, id)
-        )
+        cur.execute("""
+            UPDATE personas
+            SET nombre = %s
+            WHERE id = %s
+        """, (nombre, persona_id))
+
         conn.commit()
-
         cur.close()
         conn.close()
         return redirect("/personas")
+
+    cur.execute("""
+        SELECT id, nombre
+        FROM personas
+        WHERE id = %s
+    """, (persona_id,))
+    persona = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return render_template("personas.html", persona=persona)
 
 @app.route("/personas/desactivar/<int:persona_id>")
 def desactivar_persona(persona_id):
@@ -424,6 +425,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
