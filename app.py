@@ -254,13 +254,13 @@ def editar_persona(persona_id):
     cur = conn.cursor()
 
     if request.method == "POST":
-        nombre = request.form["nombre"]
-
-        cur.execute("""
-            UPDATE personas
-            SET nombre = %s
-            WHERE id = %s
-        """, (nombre, persona_id))
+    nombre = request.form["nombre"]
+    cuadro = request.form["cuadro"]
+    cur.execute("""
+        UPDATE personas
+        SET nombre = %s, cuadro = %s
+        WHERE id = %s
+    """, (nombre, cuadro, persona_id))
 
         conn.commit()
         cur.close()
@@ -268,7 +268,7 @@ def editar_persona(persona_id):
         return redirect("/personas")
 
     cur.execute("""
-        SELECT id, nombre
+        SELECT id, nombre, cuadro
         FROM personas
         WHERE id = %s
     """, (persona_id,))
@@ -533,6 +533,7 @@ def cuotas():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
