@@ -5,7 +5,35 @@
 </head>
 <body>
 
-<h2>Administración de Personas</h2>
+<h2>
+    {% if persona %}
+        Editar persona
+    {% else %}
+        Nueva persona
+    {% endif %}
+</h2>
+
+<form method="post">
+    <input
+        type="text"
+        name="nombre"
+        placeholder="Nombre completo"
+        required
+        value="{{ persona[1] if persona }}"
+    >
+    <br><br>
+    <button type="submit">
+        {% if persona %}
+            Actualizar
+        {% else %}
+            Guardar
+        {% endif %}
+    </button>
+</form>
+
+<hr>
+
+<h2>Listado de personas</h2>
 
 <table border="1" cellpadding="5">
     <tr>
@@ -19,18 +47,21 @@
         <td>{{ p[1] }}</td>
         <td>
             {% if p[2] %}
-                Activa
+                Activo
             {% else %}
-                Inactiva
+                Inactivo
             {% endif %}
         </td>
         <td>
             <a href="/personas/editar/{{ p[0] }}">Editar</a>
 
             {% if p[2] %}
-                <a href="/personas/desactivar/{{ p[0] }}">Desactivar</a>
+                | <a href="/personas/desactivar/{{ p[0] }}"
+                     onclick="return confirm('¿Seguro que querés desactivar esta persona?')">
+                     Desactivar
+                  </a>
             {% else %}
-                <a href="/personas/reactivar/{{ p[0] }}">Reactivar</a>
+                | <a href="/personas/reactivar/{{ p[0] }}">Reactivar</a>
             {% endif %}
         </td>
     </tr>
