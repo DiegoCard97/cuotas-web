@@ -76,7 +76,7 @@
 
     {% for p in datos %}
     <tr>
-        <td><strong>{{ p.nombre }}</strong></td>
+        <td><strong>{{ p.nombre }}</strong> ({{ p.cuadro }})</td>
 
         {% for mes in meses %}
             {% if p.meses[mes] %}
