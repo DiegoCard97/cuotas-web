@@ -429,6 +429,47 @@ def recibo(pago_id):
         mimetype="application/pdf"
     )
 
+# ======================
+# CUOTAS
+# ======================
+
+@app.route("/cuotas", methods=["GET", "POST"])
+def cuotas():
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # EDITAR MONTO
+    if request.method == "POST":
+        mes = request.form["mes"]
+        monto = int(request.form["monto"])
+
+        cur.execute("""
+            UPDATE cuotas
+            SET monto = %s
+            WHERE mes = %s
+        """, (monto, mes))
+
+        conn.commit()
+        return redirect("/cuotas")
+
+    # LISTAR CUOTAS
+    cur.execute("""
+        SELECT mes, monto
+        FROM cuotas
+        ORDER BY mes
+    """)
+    cuotas = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template(
+        "cuotas.html",
+        cuotas=cuotas
+    )
 
 
 
@@ -438,6 +479,7 @@ def recibo(pago_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
