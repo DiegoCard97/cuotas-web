@@ -168,7 +168,7 @@ def panel():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    # Personas activas con su cuadro
+    # Personas activas con cuadro
     cur.execute("""
         SELECT id, nombre, cuadro
         FROM personas
@@ -178,16 +178,13 @@ def panel():
     personas = cur.fetchall()
 
     # Pagos registrados
-    cur.execute("""
-        SELECT persona_id, mes
-        FROM pagos
-    """)
+    cur.execute("SELECT persona_id, mes FROM pagos")
     pagos_por_persona = {}
     for persona_id, mes in cur.fetchall():
         pagos_por_persona.setdefault(persona_id, set()).add(mes)
 
-    # Estructura por cuadro
-    panel_por_cuadro = {
+    # Armamos estructura por cuadro
+    cuadros = {
         "MANADA": [],
         "SCOUT": [],
         "RAIDER": [],
@@ -195,30 +192,40 @@ def panel():
     }
 
     for pid, nombre, cuadro in personas:
-        estado_meses = {}
+        estado = {}
         for mes in MESES:
-            estado_meses[mes] = mes in pagos_por_persona.get(pid, set())
+            estado[mes] = mes in pagos_por_persona.get(pid, set())
 
-        persona_data = {
+        cuadros.setdefault(cuadro, []).append({
             "id": pid,
             "nombre": nombre,
-            "meses": estado_meses
-        }
+            "cuadro": cuadro,
+            "meses": estado
+        })
 
-        # Por las dudas, si viene algo raro en BD
-        if cuadro not in panel_por_cuadro:
-            cuadro = "SCOUT"
-
-        panel_por_cuadro[cuadro].append(persona_data)
+    # Pagos (tabla inferior)
+    cur.execute("""
+        SELECT 
+            pagos.id,
+            personas.nombre,
+            pagos.mes,
+            pagos.monto
+        FROM pagos
+        JOIN personas ON pagos.persona_id = personas.id
+        ORDER BY pagos.fecha DESC
+    """)
+    pagos = cur.fetchall()
 
     cur.close()
     conn.close()
 
     return render_template(
         "panel.html",
-        panel=panel_por_cuadro,
-        meses=MESES
+        cuadros=cuadros,
+        meses=MESES,
+        pagos=pagos
     )
+
 
 # ======================
 # PERSONAS
@@ -258,6 +265,7 @@ def personas():
     conn.close()
 
     return render_template("personas.html", personas=personas)
+
 
 
 
