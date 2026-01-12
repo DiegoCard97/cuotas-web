@@ -267,6 +267,293 @@ def personas():
     return render_template("personas.html", personas=personas)
 
 
+# ======================
+# PERSONAS
+# ======================
+
+@app.route("/personas/editar/<int:persona_id>", methods=["GET", "POST"])
+def editar_persona(persona_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        cuadro = request.form["cuadro"]
+
+        cur.execute("""
+            UPDATE personas
+            SET nombre = ?, cuadro = ?
+            WHERE id = ?
+        """, (nombre, cuadro, persona_id))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect("/personas")
+
+    # GET → mostrar formulario
+    cur.execute("""
+        SELECT id, nombre, cuadro
+        FROM personas
+        WHERE id = ?
+    """, (persona_id,))
+
+    persona = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    return render_template("editar_persona.html", persona=persona)
+
+
+@app.route("/personas/desactivar/<int:persona_id>")
+def desactivar_persona(persona_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE personas
+        SET activo = 0
+        WHERE id = ?
+    """, (persona_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect("/personas")
+
+
+@app.route("/personas/reactivar/<int:persona_id>")
+def reactivar_persona(persona_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE personas
+        SET activo = 1
+        WHERE id = ?
+    """, (persona_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect("/personas")
+
+
+# ======================
+# PAGOS
+# ======================
+
+@app.route("/pago", methods=["GET", "POST"])
+def pago():
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Personas activas
+    cur.execute("""
+        SELECT id, nombre
+        FROM personas
+        WHERE activo = 1
+        ORDER BY nombre
+    """)
+    personas = cur.fetchall()
+
+    # Cuotas
+    cur.execute("""
+        SELECT mes, monto
+        FROM cuotas
+        ORDER BY mes
+    """)
+    cuotas = cur.fetchall()
+
+    if request.method == "POST":
+        persona_id = int(request.form["persona"])
+        mes = request.form["mes"]
+
+        cur.execute("""
+            SELECT monto
+            FROM cuotas
+            WHERE mes = ?
+        """, (mes,))
+        cuota = cur.fetchone()
+
+        if not cuota:
+            cur.close()
+            conn.close()
+            return "Ese mes no tiene cuota definida"
+
+        monto = cuota["monto"] if isinstance(cuota, dict) else cuota[0]
+
+        try:
+            cur.execute("""
+                INSERT INTO pagos (persona_id, mes, monto, fecha)
+                VALUES (?, ?, ?, ?)
+            """, (
+                persona_id,
+                mes,
+                monto,
+                datetime.now().strftime("%Y-%m-%d")
+            ))
+            conn.commit()
+            return redirect("/panel")
+
+        except Exception as e:
+            conn.rollback()
+            print("Error al registrar pago:", e)
+            return render_template(
+                "pago.html",
+                personas=personas,
+                cuotas=cuotas,
+                error="No se pudo registrar el pago"
+            )
+        finally:
+            cur.close()
+            conn.close()
+
+    cur.close()
+    conn.close()
+    return render_template("pago.html", personas=personas, cuotas=cuotas)
+
+
+# ======================
+# ADMINISTRAR PAGOS
+# ======================
+
+@app.route("/pagos")
+def administrar_pagos():
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            pagos.id,
+            personas.nombre,
+            pagos.mes,
+            pagos.monto,
+            pagos.fecha
+        FROM pagos
+        JOIN personas ON pagos.persona_id = personas.id
+        ORDER BY pagos.fecha DESC
+    """)
+    pagos = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return render_template("pagos.html", pagos=pagos)
+
+
+@app.route("/pagos/borrar/<int:pago_id>")
+def borrar_pago(pago_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        DELETE FROM pagos
+        WHERE id = ?
+    """, (pago_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect("/pagos")
+
+
+# ======================
+# RECIBO PDF
+# ======================
+
+@app.route("/recibo/<int:pago_id>")
+def recibo(pago_id):
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            personas.nombre,
+            pagos.mes,
+            pagos.monto,
+            pagos.fecha
+        FROM pagos
+        JOIN personas ON pagos.persona_id = personas.id
+        WHERE pagos.id = ?
+    """, (pago_id,))
+
+    pago = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not pago:
+        return "Pago no encontrado"
+
+    nombre, mes, monto, fecha = pago
+    pdf = generar_recibo(nombre, mes, monto, fecha)
+
+    return send_file(
+        pdf,
+        as_attachment=True,
+        download_name=f"recibo_{nombre}_{mes}.pdf",
+        mimetype="application/pdf"
+    )
+
+
+# ======================
+# CUOTAS
+# ======================
+
+@app.route("/cuotas", methods=["GET", "POST"])
+def cuotas():
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == "POST":
+        mes = request.form["mes"]
+        monto = int(request.form["monto"])
+
+        cur.execute("""
+            UPDATE cuotas
+            SET monto = ?
+            WHERE mes = ?
+        """, (monto, mes))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect("/cuotas")
+
+    cur.execute("""
+        SELECT mes, monto
+        FROM cuotas
+        ORDER BY mes
+    """)
+    cuotas = cur.fetchall()
+
+    cur.close()
+    conn.close()
+    return render_template("cuotas.html", cuotas=cuotas)
+
 
 
 
