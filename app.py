@@ -285,8 +285,8 @@ def editar_persona(persona_id):
 
         cur.execute("""
             UPDATE personas
-            SET nombre = ?, cuadro = ?
-            WHERE id = ?
+            SET nombre = %s, cuadro = %s
+            WHERE id = %s
         """, (nombre, cuadro, persona_id))
 
         conn.commit()
@@ -298,14 +298,14 @@ def editar_persona(persona_id):
     cur.execute("""
         SELECT id, nombre, cuadro
         FROM personas
-        WHERE id = ?
+        WHERE id = %s
     """, (persona_id,))
 
     persona = cur.fetchone()
     cur.close()
     conn.close()
 
-    return render_template("editar_persona.html", persona=persona)
+    return render_template("persona_editar.html", persona=persona)
 
 
 @app.route("/personas/desactivar/<int:persona_id>")
@@ -384,7 +384,7 @@ def pago():
         cur.execute("""
             SELECT monto
             FROM cuotas
-            WHERE mes = ?
+            WHERE mes = %s
         """, (mes,))
         cuota = cur.fetchone()
 
@@ -398,7 +398,7 @@ def pago():
         try:
             cur.execute("""
                 INSERT INTO pagos (persona_id, mes, monto, fecha)
-                VALUES (?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s)
             """, (
                 persona_id,
                 mes,
@@ -466,7 +466,7 @@ def borrar_pago(pago_id):
 
     cur.execute("""
         DELETE FROM pagos
-        WHERE id = ?
+        WHERE id = %s
     """, (pago_id,))
 
     conn.commit()
@@ -495,7 +495,7 @@ def recibo(pago_id):
             pagos.fecha
         FROM pagos
         JOIN personas ON pagos.persona_id = personas.id
-        WHERE pagos.id = ?
+        WHERE pagos.id = %s
     """, (pago_id,))
 
     pago = cur.fetchone()
@@ -534,8 +534,8 @@ def cuotas():
 
         cur.execute("""
             UPDATE cuotas
-            SET monto = ?
-            WHERE mes = ?
+            SET monto = %s
+            WHERE mes = %s
         """, (monto, mes))
 
         conn.commit()
@@ -553,6 +553,7 @@ def cuotas():
     cur.close()
     conn.close()
     return render_template("cuotas.html", cuotas=cuotas)
+
 
 
 
