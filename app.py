@@ -198,28 +198,13 @@ def panel():
 # PERSONAS
 # ======================
 
-@app.route("/personas", methods=["GET", "POST"])
+@app.route("/personas")
 def personas():
     if "user" not in session:
         return redirect("/")
 
     conn = get_db_connection()
     cur = conn.cursor()
-
-    if request.method == "POST":
-        nombre = request.form["nombre"].strip()
-        cuadro = request.form.get("cuadro", "SCOUT")
-
-        if nombre:
-            cur.execute("""
-                INSERT INTO personas (nombre, cuadro, activo)
-                VALUES (%s, %s, TRUE)
-            """, (nombre, cuadro))
-            conn.commit()
-
-        cur.close()
-        conn.close()
-        return redirect("/personas")
 
     cur.execute("""
         SELECT id, nombre, cuadro, activo
@@ -232,6 +217,7 @@ def personas():
     conn.close()
     return render_template("personas.html", personas=personas)
 
+
 @app.route("/personas/editar/<int:persona_id>", methods=["GET", "POST"])
 def editar_persona(persona_id):
     if "user" not in session:
@@ -241,11 +227,30 @@ def editar_persona(persona_id):
     cur = conn.cursor()
 
     if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        cuadro = request.form.get("cuadro", "SCOUT")
+
+        if not nombre:
+            cur.execute("""
+                SELECT id, nombre, cuadro
+                FROM personas
+                WHERE id = %s
+            """, (persona_id,))
+            persona = cur.fetchone()
+            cur.close()
+            conn.close()
+            return render_template(
+                "persona_editar.html",
+                persona=persona,
+                error="El nombre no puede estar vacío"
+            )
+
         cur.execute("""
             UPDATE personas
             SET nombre = %s, cuadro = %s
             WHERE id = %s
-        """, (request.form["nombre"], request.form["cuadro"], persona_id))
+        """, (nombre, cuadro, persona_id))
+
         conn.commit()
         cur.close()
         conn.close()
@@ -262,6 +267,7 @@ def editar_persona(persona_id):
     conn.close()
     return render_template("persona_editar.html", persona=persona)
 
+
 @app.route("/personas/desactivar/<int:persona_id>")
 def desactivar_persona(persona_id):
     if "user" not in session:
@@ -269,11 +275,18 @@ def desactivar_persona(persona_id):
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE personas SET activo = FALSE WHERE id = %s", (persona_id,))
+
+    cur.execute("""
+        UPDATE personas
+        SET activo = FALSE
+        WHERE id = %s
+    """, (persona_id,))
+
     conn.commit()
     cur.close()
     conn.close()
     return redirect("/personas")
+
 
 @app.route("/personas/reactivar/<int:persona_id>")
 def reactivar_persona(persona_id):
@@ -282,7 +295,13 @@ def reactivar_persona(persona_id):
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE personas SET activo = TRUE WHERE id = %s", (persona_id,))
+
+    cur.execute("""
+        UPDATE personas
+        SET activo = TRUE
+        WHERE id = %s
+    """, (persona_id,))
+
     conn.commit()
     cur.close()
     conn.close()
@@ -425,3 +444,4 @@ def cuotas():
     cur.close()
     conn.close()
     return render_template("cuotas.html", cuotas=cuotas)
+
