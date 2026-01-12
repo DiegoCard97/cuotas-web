@@ -6,12 +6,26 @@
 
     <style>
         body { font-family: Arial, sans-serif; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }
-        th, td { border: 1px solid #999; padding: 6px; text-align: center; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 6px;
+            text-align: center;
+        }
+
         th { background-color: #eee; }
+
         .ok { background-color: #c8f7c5; font-weight: bold; }
         .no { background-color: #f7c5c5; font-weight: bold; }
+
         .acciones { margin-bottom: 20px; }
+
         a.boton {
             display: inline-block;
             padding: 8px 12px;
@@ -21,7 +35,43 @@
             border-radius: 4px;
             margin-right: 10px;
         }
+
         a.boton:hover { background-color: #1a5dc9; }
+
+        /* ===== COLORES POR CUADRO ===== */
+
+        .cuadro-manada {
+            background-color: #fff4cc;
+            border-left: 8px solid #f1c40f;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+
+        .cuadro-scout {
+            background-color: #e8f6ef;
+            border-left: 8px solid #27ae60;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+
+        .cuadro-raider {
+            background-color: #fdecea;
+            border-left: 8px solid #c0392b;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+
+        .cuadro-rover {
+            background-color: #eef2ff;
+            border-left: 8px solid #34495e;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+
+        .cuadro-manada h2 { color: #b7950b; }
+        .cuadro-scout h2 { color: #1e8449; }
+        .cuadro-raider h2 { color: #922b21; }
+        .cuadro-rover h2 { color: #2c3e50; }
     </style>
 </head>
 
@@ -41,37 +91,36 @@
     {% set clase = "cuadro-" + nombre_cuadro|lower %}
     <div class="{{ clase }}">
 
-    <h2>{{ nombre_cuadro }}</h2>
+        <h2>{{ nombre_cuadro }}</h2>
 
-    {% if personas|length == 0 %}
-        <p><em>No hay personas en este cuadro</em></p>
-    {% else %}
-    <table>
-        <tr>
-            <th>Persona</th>
-            {% for mes in meses %}
-                <th>{{ mes }}</th>
-            {% endfor %}
-        </tr>
+        {% if personas|length == 0 %}
+            <p><em>No hay personas en este cuadro</em></p>
+        {% else %}
+        <table>
+            <tr>
+                <th>Persona</th>
+                {% for mes in meses %}
+                    <th>{{ mes }}</th>
+                {% endfor %}
+            </tr>
 
-        {% for p in personas %}
-        <tr>
-            <td><strong>{{ p.nombre }}</strong></td>
-            {% for mes in meses %}
-                {% if p.meses[mes] %}
-                    <td class="ok">✔</td>
-                {% else %}
-                    <td class="no">❌</td>
-                {% endif %}
+            {% for p in personas %}
+            <tr>
+                <td><strong>{{ p.nombre }}</strong></td>
+                {% for mes in meses %}
+                    {% if p.meses[mes] %}
+                        <td class="ok">✔</td>
+                    {% else %}
+                        <td class="no">❌</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
             {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+        </table>
+        {% endif %}
 
     </div>
 {% endfor %}
-
 
 <h2>Pagos registrados</h2>
 
@@ -97,5 +146,3 @@
 
 </body>
 </html>
-
-
